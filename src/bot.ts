@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits, EmbedBuilder, TextChannel, Guild, Message, GuildMember, Role, ChannelType, ColorResolvable, MessageReaction, User, Colors, Collection } from 'discord.js';
-import { GreeterRole, SFAcorp, auditlogchannel, logchannel, prefix, welcomechannel } from '../config/config.js';
+import { GreeterRole, SFAcorp, auditlogchannel, logchannel, prefix, representtiverole, welcomechannel } from '../config/config.js';
 import { autoresponsecheck } from './modules/autoresponse.js';
 import { commandGroup } from './modules/command.js';
 import { initDB } from "./modules/DB.js"
@@ -10,6 +10,7 @@ import { initRole } from './modules/role.js';
 import { initUser } from './modules/user.js';
 import { initWS } from './modules/whitestar.js';
 import { initmisc } from './modules/misc.js';
+import { config } from 'dotenv';
 
 let SFA_Guild: Guild;
 let selfMember: GuildMember;
@@ -19,6 +20,8 @@ const bot = new Client({
     intents:
         [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages]
 });
+
+config()
 
 const token = process.env.BOT_TOKEN
 
@@ -60,6 +63,8 @@ bot.on('guildMemberAdd', async member => {
         .addFields({ name: '\u200b', value: `ID: ${member.id}\nUsername: ${member.user.username}\nJoined at: <t:${Math.floor(member.joinedTimestamp / 1000)}:f>\nIn other words: <t:${Math.floor(member.joinedTimestamp / 1000)}:R>\nNew Server Members: ${member.guild.memberCount}` })
         .setThumbnail(member.user.displayAvatarURL({ size: 4096 }))
     sendEmbed(logchannel, "", greetembed)
+    member.roles.add(representtiverole)
+    member.setNickname(`[] ${member.user.displayName}`)
     sendMessage(welcomechannel, `Welcome, <@${member.id}>! A <@&${GreeterRole}> will be with you soon. Please answer the below questions:\n⇒ What Corporation are you from, if any?\n⇒ Are you on the lookout for a position in the SFA?\n-~-~-~-~-~-\nPlease visit the <#883082845663428668> channel and read the rules. To unlock RS-queues read through <#795153050104496139> and click the reaction.\n\nWelcome To the Spacefleet Alliance Server!\n<:SpFl:529449288145829918> <:Ender:704541877365375028> <:WC:752321386902716438> <:BMC:926246325287284838> <:DS:579658975692324864> <:SOL:883405937673662484> <:YAL:780171132417605682> <:C55:780171448517263370>`)
 });
 bot.on("messageUpdate", async (oldmessage, newmessage) => {
@@ -423,4 +428,4 @@ export {
     getSelfMember,
     getAllCommands,
     getallMembers
-        }
+}
