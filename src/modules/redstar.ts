@@ -778,20 +778,20 @@ async function initAFKTimeoutCheckLoop() {
                 }
             })
             .catch(err => { })
-        queryDB(`SELECT playerID, level FROM rsqueueuser WHERE lastseenTimestamp < ${d - AFKTimeout - 120000}`)
+        queryDB(`SELECT playerID, level FROM rsqueueuser WHERE lastseenTimestamp < ${d - AFKTimeout - 1200}`)
             .then(playersToKick => {
                 let levelsToUpdate: number[] = []
                 for (let j = 0; j < playersToKick.length; j++) {
                     queryDB(`DELETE FROM rsqueueuser WHERE playerID = ${playersToKick[j].playerID} AND level = ${playersToKick[j].level}`)
-                        .then(() => {
+                        .then(() => {                           
                             getCurrentQueue(playersToKick[j].level) //this is to get the length of the queue
                                 .then(currentQueue => {
                                     sendMessage(rschannels[playersToKick[j].level], `RS${playersToKick[j].level + 3} (${currentQueue.length}/4) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
                                     if (!levelsToUpdate.some(level => level === playersToKick[j].level)) {
                                         levelsToUpdate.push(playersToKick[j].level)
-                                    }
+                                    }                                    
                                     if (j === playersToKick.length - 1) {
-                                        for (let i = 0; i <= levelsToUpdate.length; i++) {
+                                        for (let i = 0; i <  levelsToUpdate.length; i++) {
                                             sendRSEmbed(levelsToUpdate[i], false)
                                         }
                                     }
@@ -808,4 +808,4 @@ async function initAFKTimeoutCheckLoop() {
 export {
     initAFKTimeoutCheckLoop,
     initRS,
-            }
+                    }
