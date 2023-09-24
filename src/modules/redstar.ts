@@ -778,7 +778,7 @@ async function initAFKTimeoutCheckLoop() {
                 }
             })
             .catch(err => { })
-        queryDB(`SELECT playerID, level FROM rsqueueuser WHERE lastseenTimestamp < ${d - AFKTimeout - 1200}`)
+        queryDB(`SELECT playerID, level FROM rsqueueuser WHERE lastseenTimestamp < ${d - AFKTimeout - 300000}`)
             .then(playersToKick => {
                 let levelsToUpdate: number[] = []
                 for (let j = 0; j < playersToKick.length; j++) {
@@ -808,4 +808,4 @@ async function initAFKTimeoutCheckLoop() {
 export {
     initAFKTimeoutCheckLoop,
     initRS,
-                    }
+          }
