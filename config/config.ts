@@ -25,7 +25,7 @@ const rsroles = ["772599455681085470", "772599415751704578", "718264052962557952
 const AFKTimeout = 3600000
 const runlogchannel = "797502406837534731"
 
-const wsTypes = [{ "name": "Competitive", "shortname": "comp" }, { "name": "Casual", "shortname": "casual" }, { "name": "Lossfarm", "shortname": "loss" }]
+const wsTypes = [{ "name": "Competitive", "shortname": "comp" }, { "name": "Casual", "shortname": "casual" }, { "name": "Ultra-Casual", "shortname": "uc" }]
 const WSRoles = ["454867735969529857", "704537052334653511", "508290366672338965", "592495223603462195", "545006010629226506", "880533387406880838", "772597667711811594", "727269551930081401", "1154884581732909087"] //Indexed the same as corpRoles: from left to right: Spfl, Ender, BMC, WC, DS, SOL, YAL, C55.
 const allWSrole = "592781800732885013"
 const rosterBuddiesRole = "850107238327779358"
@@ -41,37 +41,37 @@ const dispatchSpeed = [null, 240, 176, 130, 96, 70, 50, 36, 26, 18, 12]
 
 
 export {
-    rschannels,
-    corpRoles,
-    coordRole,
-    prefix,
-    AFKTimeout,
-    rsroles,
-    retiredrole,
-    representtiverole,
-    Corpnames,
-    runlogchannel,
-    SFAcorp,
-    captainRole,
-    botchannels,
-    GreeterRole,
-    adminRole,
-    DevRole,
-    WSRoles,
-    wsTypes,
-    signupchannel,
-    memberrole,
-    destinydamage,
-    blastHP,
-    areaHP,
-    TWSpeed,
-    dispatchSpeed,
-    rslevels,
-    allWSrole,
-    rosterBuddiesRole,
-    mustReadChannel,
-    rosterbuildingchannel,
-    welcomechannel,
-    logchannel,
-    auditlogchannel
+    rschannels,
+    corpRoles,
+    coordRole,
+    prefix,
+    AFKTimeout,
+    rsroles,
+    retiredrole,
+    representtiverole,
+    Corpnames,
+    runlogchannel,
+    SFAcorp,
+    captainRole,
+    botchannels,
+    GreeterRole,
+    adminRole,
+    DevRole,
+    WSRoles,
+    wsTypes,
+    signupchannel,
+    memberrole,
+    destinydamage,
+    blastHP,
+    areaHP,
+    TWSpeed,
+    dispatchSpeed,
+    rslevels,
+    allWSrole,
+    rosterBuddiesRole,
+    mustReadChannel,
+    rosterbuildingchannel,
+    welcomechannel,
+    logchannel,
+    auditlogchannel
 }
