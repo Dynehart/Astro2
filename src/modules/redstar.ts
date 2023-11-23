@@ -266,7 +266,7 @@ function outExec(args: string[], message: Message, d: number) {
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
             if (queues.some(queue => queue.level === rsLevel)) {
-                removeFromQueue(rsLevel, message.member, false)
+                removeFromQueue(rsLevel, message.member, false, 0)
             }
             else {
                 sendMessage(rschannels[rsLevel], `You are not currently in the RS${rsLevel + 3} queue`)
@@ -279,7 +279,7 @@ function removeguestExec(args: string[], message: Message, d: number) {
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
             if (queues.length !== null) {
-                removeFromQueue(rsLevel, message.member, true)
+                removeFromQueue(rsLevel, message.member, true, 0)
             }
             else {
                 sendMessage(rschannels[rsLevel], `Your guest is not currently in the RS${rsLevel + 3} queue`)
@@ -394,7 +394,7 @@ async function addToQueue(level: number, player: GuildMember, guest: boolean, d:
     })
 }
 
-async function removeFromQueue(level: number, player: GuildMember, guest: boolean) {
+async function removeFromQueue(level: number, player: GuildMember, guest: boolean, reason: number) {
     return new Promise<boolean>(async (resolve) => {
         let type = " AND type = 0"
         let name = player.displayName
@@ -405,7 +405,14 @@ async function removeFromQueue(level: number, player: GuildMember, guest: boolea
         queryDB(`DELETE FROM rsqueueuser WHERE playerID = ${player.id} AND level = ${level}${type}`)
             .then(() => {
                 getCurrentQueue(level).then(async currentQueue => {
-                    sendMessage(rschannels[level], `RS${level + 3} (${currentQueue.length}/4) ${name} left`)
+                    let content = ""
+                    if (reason === 0) {
+                        content = `RS${level + 3} (${currentQueue.length}/4) ${name} left`
+                    }
+                    else {
+                        content = `RS${level + 3} (${currentQueue.length}/4) ${name} left because they were in a starting RS${reason} queue`
+                    }
+                    sendMessage(rschannels[level], content)
                     sendRSEmbed(level, false)
                         .then(() => {
                             resolve(true)
@@ -624,7 +631,7 @@ async function sendQueueStartMessage(level: number) {
                         }
                         k++
                         if (k === CurrentQueue.length) {
-                            content = `${content.slice(0, content.length - 2)}\n\nWinterComes is open with 20% and at #95 on the Red Star Event Leaderboard.`
+                            content = `${content.slice(0, content.length - 2)}\n\nSpacefleet usually has the best bonus percentage for your arts. It can be found in the top 10 best corps by influence. Please leave the corp after your run!`
                             sendMessage(rschannels[level], content).catch(err => { })
                             usersToDM.forEach(userID => {
                                 sendDM(userID, content).catch(err => { })
@@ -652,7 +659,7 @@ async function CheckPlayerInStartingQueue(level: number) {
                         for (let i = 0; i < queues.length; i++) {
                             if (queues[i].level !== level) {
                                 const playerID = currentQueue[index].playerID.toString()
-                                await removeFromQueue(queues[i].level, await fetchMember(playerID), queues[i].type)
+                                await removeFromQueue(queues[i].level, await fetchMember(playerID), queues[i].type, level + 3)
                             }
                         }
                     }
@@ -783,15 +790,15 @@ async function initAFKTimeoutCheckLoop() {
                 let levelsToUpdate: number[] = []
                 for (let j = 0; j < playersToKick.length; j++) {
                     queryDB(`DELETE FROM rsqueueuser WHERE playerID = ${playersToKick[j].playerID} AND level = ${playersToKick[j].level}`)
-                        .then(() => {                           
+                        .then(() => {
                             getCurrentQueue(playersToKick[j].level) //this is to get the length of the queue
                                 .then(currentQueue => {
                                     sendMessage(rschannels[playersToKick[j].level], `RS${playersToKick[j].level + 3} (${currentQueue.length}/4) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
                                     if (!levelsToUpdate.some(level => level === playersToKick[j].level)) {
                                         levelsToUpdate.push(playersToKick[j].level)
-                                    }                                    
+                                    }
                                     if (j === playersToKick.length - 1) {
-                                        for (let i = 0; i <  levelsToUpdate.length; i++) {
+                                        for (let i = 0; i < levelsToUpdate.length; i++) {
                                             sendRSEmbed(levelsToUpdate[i], false)
                                         }
                                     }
@@ -808,4 +815,4 @@ async function initAFKTimeoutCheckLoop() {
 export {
     initAFKTimeoutCheckLoop,
     initRS,
-          }
+}
