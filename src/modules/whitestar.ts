@@ -166,12 +166,12 @@ function rosterdeleteExec(args: string[], message: Message, d: number) {
         })
 }
 async function wspollExec(args: string[], message: Message, d: number) {
-    await sendMessage(message.channel.id, `__**Weekly <@&${allWSrole}> signup**__: *vote in until Friday - Saturday. Scans are typically on sunday.*\n\nFor Participation in a WS you will be asked to hop to a SFA corp which may differ from your 'home' corp. You can stay there for the duration of the WS. When you see that you are assigned to that corp, please make your way over there as soon as you can. No one wants to wait long.\n\nThe minimumm requirements to sign up for a WS here are posted in **<#${mustReadChannel}>**. Read them carefully and only sign up when you are 100% sure you can meet these requirements for the full 5 days. Teamwork and communication are the most important thing in WS. Be proactive and don't let the commanders do everything alone! Call out problems or plans you see and have.\n\n__:alarm_clock: Your Timezone and your Tech must be up-to-date in the HS-Compendium regardless of what WS type you sign up for! __\n\n**The SFA has some fixed rosters of people who run together (almost) every week. If you want to join one of them, contact:**\n_**<@426360739477979157>** for the weekly competitive high-level Ender-WS_\n_**<@447800172693553153>** for the weekly competitive 15v Spacefleet-weekend-WS_\n_**<@523938533778653194>** for the back-to-back lossfarm 15v Deadspace-WS_\n_**<@880817767031373877>** for the weekly semi-competitive low-mid level WS_\n\nIf you have any questions or concerns, or want to report inappropriate behaviour of a WS participant, ping **<@&${rosterBuddiesRole}>** for help. Thank you for flying with SFA <:salute:522916552593637376>`)
+    await sendMessage(message.channel.id, `__**Weekly <@&${allWSrole}> signup**__: *vote in until Friday - Saturday. Scans are typically on sunday.*\n\nFor Participation in a WS you will be asked to hop to a SFA corp which may differ from your 'home' corp. You can stay there for the duration of the WS. When you see that you are assigned to that corp, please make your way over there as soon as you can. No one wants to wait long.\n\nThe minimumm requirements to sign up for a WS here are posted in **<#${mustReadChannel}>**. This is due for a rework since DN so don't take everything there at face value. Read them carefully and only sign up when you are 100% sure you can meet these requirements for the full 5 days. Teamwork and communication are the most important thing in WS. Be proactive and don't let the commanders do everything alone! Call out problems or plans you see and have.\n\n__:alarm_clock: Your Timezone and your Tech must be up-to-date in the HS-Compendium regardless of what WS type you sign up for! __\n\n**The SFA has some fixed rosters of people who run together (almost) every week. If you want to join one of them, contact:\n_<@447800172693553153> for the weekly competitive Spacefleet-WS_\n_**<@523938533778653194>** for the back-to-back Ultra-Casual Deadspace-WS_\n_**<@880817767031373877>** for the weekly semi-competitive low-mid level WS_\n\nIf you have any questions or concerns, or want to report inappropriate behaviour of a WS participant, ping **<@&${rosterBuddiesRole}>** for help. Thank you for flying with SFA <:salute:522916552593637376>`)
     let pollEmbed = new EmbedBuilder()
         .setColor('#ffd046')
         .setTitle(`Preferred WS type`)
         .setDescription("One vote per HS-Account")
-        .addFields({ name: '\u200b', value: ':regional_indicator_a: Competitive\n:regional_indicator_b: Casual\n:regional_indicator_c: Lossfarm\n:regional_indicator_d: Backup/Additional Alt' });
+        .addFields({ name: '\u200b', value: `:regional_indicator_a: ${wsTypes[0].name}\n:regional_indicator_b: ${wsTypes[1].name}\n:regional_indicator_c: ${wsTypes[2].name}\n:regional_indicator_d: Backup/Additional Alt` });
     sendEmbed(message.channel.id, "", pollEmbed)
         .then(async sent => {
             let id = sent.id;
@@ -324,7 +324,7 @@ function sendRosterMessage(matchID: number) {
                             }
                             const member = await fetchMember(allplayers[index].playerID)
                             if (member !== null) {
-                                content += `\n${index + 1}. ${member.displayName}${alt}`
+                                content += `\n${index + 1}. <@${member.id}>${alt}`
                                 await member.roles.add(wsrole)
                             }
                             if (index === allplayers.length - 1) {
@@ -390,4 +390,4 @@ function removePlayerFromRoster(member: GuildMember, channelID: string, corpInde
 
 export {
     initWS,
-                  }
+}
