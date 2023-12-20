@@ -17,8 +17,7 @@ function initmisc(BaseCommandGroup: commandGroup) {
 }
 
 function sfaExec(args: string[], message: Message, d: number) {
-    sendMessage(message.channel.id, "https://media.discordapp.net/attachments/456274740844429312/1002268716047802509/SFArs14_initial.png")
-}
+    sendMessage(message.channel.id, "https://cdn.discordapp.com/attachments/588359525376196627/1187103801115685015/SFA_corp_list.png?ex=6595ab91&is=65833691&hm=45670c20032501b7101258d0704d68286d323dd228fbef71e23ff7fb5538022e&")}
 function emojiExec(args: string[], message: Message, d: number) {
     const emoteRegex = /<:.+:(\d+)>/gm
     const animatedEmoteRegex = /<a:.+:(\d+)>/gm
