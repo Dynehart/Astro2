@@ -64,7 +64,7 @@ bot.on('guildMemberAdd', async member => {
         .setThumbnail(member.user.displayAvatarURL({ size: 4096 }))
     sendEmbed(logchannel, "", greetembed)
     member.roles.add(representtiverole)
-    member.setNickname(`[] ${member.user.displayName}`)
+    member.setNickname(`[] ${member.displayName}`)
     sendMessage(welcomechannel, `Welcome, <@${member.id}>! A <@&${GreeterRole}> will be with you soon. Please answer the below questions:\n⇒ What Corporation are you from, if any?\n⇒ Are you on the lookout for a position in the SFA?\n-~-~-~-~-~-\nPlease visit the <#883082845663428668> channel and read the rules. To unlock RS-queues read through <#795153050104496139> and click the reaction.\n\nWelcome To the Spacefleet Alliance Server!\n<:SpFl:529449288145829918> <:Ender:704541877365375028> <:WC:752321386902716438> <:BMC:926246325287284838> <:DS:579658975692324864> <:SOL:883405937673662484> <:YAL:780171132417605682> <:C55:780171448517263370>`)
 });
 bot.on("messageUpdate", async (oldmessage, newmessage) => {
