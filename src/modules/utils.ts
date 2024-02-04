@@ -8,7 +8,7 @@ function getFormattedDeltaTime(date1: number, date2: number) {
         const relativeHours = Math.floor(relativeMinutes / 60)
         const relativeDays = Math.floor(relativeHours / 24)
         let timestr = ""
-        if(relativeDays !== 0) {
+        if (relativeDays !== 0) {
             timestr += `${relativeDays}d`
         }
         if (relativeHours % 24 !== 0) {

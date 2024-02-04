@@ -41,7 +41,7 @@ function statstoprsExec(args: string[], message: Message, d: number) {
         timeframecheck = `AND runID >= '${d - timeframeDays * 86400000}' `
     }
     queryDB(`SELECT COUNT(playerID) AS runs, playerID FROM playerinrun WHERE isGuest = 0 ${runlevelcheck}${timeframecheck}GROUP BY playerID ORDER BY runs DESC LIMIT 10`)
-        .then(toprunners => {           
+        .then(toprunners => {
             if (toprunners.length !== 0) {
                 let content = "```Runs   Name\n-----------"
                 let k = 0
