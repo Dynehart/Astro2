@@ -30,17 +30,17 @@ function initWS(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function rostercreateExec(args: string[], message: Message, d: number) {
-    const size = parseInt(args[2])
-    const j = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[1] || thistype.shortname.toLowerCase() === args[1])
-    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0] || thiscorp.shortname.toLowerCase() === args[0])
+function rostercreateExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const size = parseInt(args[2].lowercase)
+    const j = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[1].lowercase || thistype.shortname.toLowerCase() === args[1].lowercase)
+    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT type FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
             if (output.length === 0) {
                 let validroster = false
                 let matchID: number
                 for (let playerIndex = 3; playerIndex < args.length; playerIndex++) {
-                    let member = await getmember(message.channel.id, args[playerIndex], message.member.id, false)
+                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member.id, false)
                     if (member !== null) {
                         if (!validroster) {
                             await queryDB(`INSERT INTO wsmatch(corp, type, size, current) VALUES (${corpIndex}, ${escape(wsTypes[j].name)}, ${size}, 1)`)
@@ -64,8 +64,8 @@ function rostercreateExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function rosteraddExec(args: string[], message: Message, d: number) {
-    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0] || thiscorp.shortname.toLowerCase() === args[0])
+function rosteraddExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID, size, type FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
             if (output.length !== 0) {
@@ -74,7 +74,7 @@ function rosteraddExec(args: string[], message: Message, d: number) {
                 const size: number = output[0].size
                 const otherPlayers = (await queryDB(`SELECT playerID FROM wsplayer WHERE matchID =${matchID}`)).length
                 for (let playerIndex = 1; playerIndex < args.length; playerIndex++) {
-                    let member = await getmember(message.channel.id, args[playerIndex], message.member.id, false)
+                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member.id, false)
                     if (member !== null) {
                         validroster = true
                         await addPlayerToRoster(member, playerIndex + otherPlayers - 1, size, message.channel.id, corpIndex, matchID)
@@ -94,8 +94,8 @@ function rosteraddExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function rosterremoveExec(args: string[], message: Message, d: number) {
-    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0] || thiscorp.shortname.toLowerCase() === args[0])
+function rosterremoveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID, size, type FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
             if (output.length !== 0) {
@@ -103,7 +103,7 @@ function rosterremoveExec(args: string[], message: Message, d: number) {
                 const matchID: number = output[0].ID
                 let rosterxists = true
                 for (let playerIndex = 1; playerIndex < args.length; playerIndex++) {
-                    let member = await getmember(message.channel.id, args[playerIndex], message.member.id, false)
+                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member.id, false)
                     if (member !== null) {
                         validroster = true
                         rosterxists = await removePlayerFromRoster(member, message.channel.id, corpIndex, matchID)
@@ -129,10 +129,10 @@ function rosterremoveExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function rostereditExec(args: string[], message: Message, d: number) {
-    const size = parseInt(args[2])
-    const j = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[1] || thistype.shortname.toLowerCase() === args[1])
-    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0] || thiscorp.shortname.toLowerCase() === args[0])
+function rostereditExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const size = parseInt(args[2].lowercase)
+    const j = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[1].lowercase || thistype.shortname.toLowerCase() === args[1].lowercase)
+    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
             if (output.length !== 0) {
@@ -151,8 +151,8 @@ function rostereditExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function rosterdeleteExec(args: string[], message: Message, d: number) {
-    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0] || thiscorp.shortname.toLowerCase() === args[0])
+function rosterdeleteExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
             if (output.length !== 0) {
@@ -165,7 +165,7 @@ function rosterdeleteExec(args: string[], message: Message, d: number) {
             }
         })
 }
-async function wspollExec(args: string[], message: Message, d: number) {
+async function wspollExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     await sendMessage(message.channel.id, `__**Weekly <@&${allWSrole}> signup**__: *vote in until Friday - Saturday. Scans are typically on sunday.*\n\nFor Participation in a WS you will be asked to hop to a SFA corp which may differ from your 'home' corp. You can stay there for the duration of the WS. When you see that you are assigned to that corp, please make your way over there as soon as you can. No one wants to wait long.\n\nThe minimumm requirements to sign up for a WS here are posted in **<#${mustReadChannel}>**. This is due for a rework since DN so don't take everything there at face value. Read them carefully and only sign up when you are 100% sure you can meet these requirements for the full 5 days. Teamwork and communication are the most important thing in WS. Be proactive and don't let the commanders do everything alone! Call out problems or plans you see and have.\n\n__:alarm_clock: Your Timezone and your Tech must be up-to-date in the HS-Compendium regardless of what WS type you sign up for! __\n\n**The SFA has some fixed rosters of people who run together (almost) every week. If you want to join one of them, contact:**\n_<@447800172693553153> for the weekly competitive Spacefleet-WS_\n_<@523938533778653194> for the back-to-back Ultra-Casual Deadspace-WS_\n_<@880817767031373877> for the weekly semi-competitive low-mid level WS_\n\nIf you have any questions or concerns, or want to report inappropriate behaviour of a WS participant, ping **<@&${rosterBuddiesRole}>** for help. Thank you for flying with SFA <:salute:522916552593637376>`)
     let pollEmbed = new EmbedBuilder()
         .setColor('#ffd046')
@@ -183,7 +183,7 @@ async function wspollExec(args: string[], message: Message, d: number) {
         })
     queryDB("UPDATE wsmatch SET current=0")
 }
-function wsshowExec(args: string[], message: Message, d: number) {
+function wsshowExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     queryDB(`SELECT wsroster FROM config`).then(async rosterMessageID => {
         let d = ''
         let i = 0
@@ -195,7 +195,7 @@ function wsshowExec(args: string[], message: Message, d: number) {
             .setColor('#ffd046');
         (await fetchChannel(signupchannel)).messages.fetch(rosterMessageID[0].wsroster)
             .then(msg => {
-                const index = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[0] || thistype.shortname.toLowerCase() === args[0])
+                const index = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[0].lowercase || thistype.shortname.toLowerCase() === args[0].lowercase)
                 if (index === 0) {
                     parameters.emoji = "🇦"
                     parameters.title = wsTypes[0].name + " "
@@ -211,7 +211,7 @@ function wsshowExec(args: string[], message: Message, d: number) {
                     parameters.title = wsTypes[2].name + " "
                     validResponse = true
                 }
-                else if (args[0] === "backup") {
+                else if (args[0].lowercase === "backup") {
                     parameters.emoji = "🇩"
                     parameters.title2 = "as Backup "
                     validResponse = true
@@ -247,11 +247,11 @@ function wsshowExec(args: string[], message: Message, d: number) {
             })
     })
 }
-function wsdestinycalcExec(args: string[], message: Message, d: number) {
-    const shipcount = parseInt(args[0])
-    const destinies = args[1].split(",").map(str => parseInt(str))
-    const blasts = args[2].split(",").map(str => parseInt(str))
-    const areas = args[3].split(",").map(str => parseInt(str))
+function wsdestinycalcExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const shipcount = parseInt(args[0].lowercase)
+    const destinies = args[1].lowercase.split(",").map(str => parseInt(str))
+    const blasts = args[2].lowercase.split(",").map(str => parseInt(str))
+    const areas = args[3].lowercase.split(",").map(str => parseInt(str))
     const cumulativeDamage = destinies.reduce((a, b) => { return a + destinydamage[b] }, 0)
     const cumulativeHP = blasts.reduce((a, b) => { return a + blastHP[b] }, 0) + areas.reduce((a, b) => { return a + areaHP[b] }, 0)
     let content = `There are ${shipcount} ships, protected by ${cumulativeHP} HP of shields.\n\nThere is a total of ${cumulativeDamage} damage done to each of those ship, resulting in a total of ${cumulativeDamage * shipcount} damage.\n\n`
@@ -266,16 +266,16 @@ function wsdestinycalcExec(args: string[], message: Message, d: number) {
     }
     sendMessage(message.channel.id, content)
 }
-function wsdispatchcalcExec(args: string[], message: Message, d: number) {
-    const relics = parseInt(args[0])
-    const dispatch = parseInt(args[1])
-    const TW = parseInt(args[2])
+function wsdispatchcalcExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const relics = parseInt(args[0].lowercase)
+    const dispatch = parseInt(args[1].lowercase)
+    const TW = parseInt(args[2].lowercase)
     sendMessage(message.channel.id, `Under TW lvl.${TW}, with ${relics} relics on the target planet, a transport with dispatch lvl.${dispatch} will take ${getFormattedDeltaTime(0, Math.floor((dispatchSpeed[dispatch] * relics * 60000) / TWSpeed[TW]))}.`)
 }
-async function wspingspamExec(args: string[], message: Message, d: number) {
-    let victim = await getmember(message.channel.id, args[0], message.member.id, false)
+async function wspingspamExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    let victim = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (victim !== null) {
-        let text = args.slice(1).join(" ")
+        let text = args.slice(1).map(a => a.original).join(" ")
         for (let i = 0; i < 5; i++) {
             setTimeout(() => {
                 sendMessage(message.channel.id, `<@${victim.id}>, ${text}`)

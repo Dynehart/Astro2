@@ -17,14 +17,14 @@ function initRole(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function rolegiveExec(args: string[], message: Message, d: number) {
-    getrole(message.channel.id, args[0], message.member.id, false)
+function rolegiveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    getrole(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async role => {
             if (role !== null) {
                 if (canManageRole(role, message.member)) {
                     if (role.position < getSelfMember().roles.highest.position) {
                         for (let index = 1; index < args.length; index++) {
-                            let member = await getmember(message.channel.id, args[index], message.member.id, false)
+                            let member = await getmember(message.channel.id, args[index].lowercase, message.member.id, false)
                             if (member !== null) {
                                 if (member.roles.cache.some(thisrole => thisrole.id === role.id)) {
                                     sendMessage(message.channel.id, `${member.displayName} already had ${role.name}`)
@@ -46,14 +46,14 @@ function rolegiveExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function roletakeExec(args: string[], message: Message, d: number) {
-    getrole(message.channel.id, args[0], message.member.id, false)
+function roletakeExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    getrole(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async role => {
             if (role !== null) {
                 if (canManageRole(role, message.member)) {
                     if (role.position < getSelfMember().roles.highest.position) {
                         for (let index = 1; index < args.length; index++) {
-                            let member = await getmember(message.channel.id, args[index], message.member.id, false)
+                            let member = await getmember(message.channel.id, args[index].lowercase, message.member.id, false)
                             if (member !== null) {
                                 if (member.roles.cache.some(thisrole => thisrole.id === role.id)) {
                                     member.roles.remove(role)
@@ -75,8 +75,8 @@ function roletakeExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function roleclearExec(args: string[], message: Message, d: number) {
-    getrole(message.channel.id, args[0], message.member.id, false)
+function roleclearExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    getrole(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async role => {
             if (role !== null) {
                 if (canManageRole(role, message.member)) {
@@ -103,11 +103,11 @@ function roleclearExec(args: string[], message: Message, d: number) {
         })
 }
 
-function rolelistExec(args: string[], message: Message, d: number) {
+function rolelistExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     listmembers(args, message.channel.id, message.member.id, false)
 }
 
-function rolebulklistExec(args: string[], message: Message, d: number) {
+function rolebulklistExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     listmembers(args, message.channel.id, message.member.id, true)
 }
 
@@ -115,40 +115,40 @@ function canManageRole(role: Role, member: GuildMember) {
     return (role.position < member.roles.highest.position) || hasAdminPerms(member)
 }
 
-async function listmembers(args: string[], channelID: string, memberID: string, bulk: boolean) {
+async function listmembers( args: { lowercase: string, original: string }[], channelID: string, memberID: string, bulk: boolean) {
     let InputArgs: { "operand": string, "inverse": boolean, "nextOr": boolean, "content": string }[] = []
     for (let i = 0; i < args.length; i++) {
         if (i === 0) {
-            if (args[i].startsWith("!")) {
-                InputArgs.push({ "operand": "and", "inverse": true, "nextOr": false, "content": args[i].slice(1) })
+            if (args[i].lowercase.startsWith("!")) {
+                InputArgs.push({ "operand": "and", "inverse": true, "nextOr": false, "content": args[i].lowercase.slice(1) })
             }
             else {
-                InputArgs.push({ "operand": "and", "inverse": false, "nextOr": false, "content": args[i] })
+                InputArgs.push({ "operand": "and", "inverse": false, "nextOr": false, "content": args[i].lowercase })
             }
         }
-        else if (args[i].startsWith("|")) {
+        else if (args[i].lowercase.startsWith("|")) {
             InputArgs[i - 1].nextOr = true
-            if (args[i].slice(1).startsWith("!")) {
-                InputArgs.push({ "operand": "or", "inverse": true, "nextOr": false, "content": args[i].slice(2) })
+            if (args[i].lowercase.slice(1).startsWith("!")) {
+                InputArgs.push({ "operand": "or", "inverse": true, "nextOr": false, "content": args[i].lowercase.slice(2) })
             }
             else {
-                InputArgs.push({ "operand": "or", "inverse": false, "nextOr": false, "content": args[i].slice(1) })
+                InputArgs.push({ "operand": "or", "inverse": false, "nextOr": false, "content": args[i].lowercase.slice(1) })
             }
         }
-        else if (args[i].startsWith("&")) {
-            if (args[i].slice(1).startsWith("!")) {
-                InputArgs.push({ "operand": "and", "inverse": true, "nextOr": false, "content": args[i].slice(2) })
+        else if (args[i].lowercase.startsWith("&")) {
+            if (args[i].lowercase.slice(1).startsWith("!")) {
+                InputArgs.push({ "operand": "and", "inverse": true, "nextOr": false, "content": args[i].lowercase.slice(2) })
             }
             else {
-                InputArgs.push({ "operand": "and", "inverse": false, "nextOr": false, "content": args[i].slice(1) })
+                InputArgs.push({ "operand": "and", "inverse": false, "nextOr": false, "content": args[i].lowercase.slice(1) })
             }
         }
         else {
-            if (args[i].startsWith("!")) {
-                InputArgs.push({ "operand": "and", "inverse": true, "nextOr": false, "content": args[i].slice(1) })
+            if (args[i].lowercase.startsWith("!")) {
+                InputArgs.push({ "operand": "and", "inverse": true, "nextOr": false, "content": args[i].lowercase.slice(1) })
             }
             else {
-                InputArgs.push({ "operand": "and", "inverse": false, "nextOr": false, "content": args[i] })
+                InputArgs.push({ "operand": "and", "inverse": false, "nextOr": false, "content": args[i].lowercase })
             }
         }
     }

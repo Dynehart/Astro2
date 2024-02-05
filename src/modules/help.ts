@@ -14,7 +14,7 @@ function initHelp(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function helpExec(args: string[], message: Message, d: number) {
+function helpExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const baseCommandGroup = getAllCommands()
     if (args.length === 0) {
         let content = "This is the List of all Commands:\n\n```"
@@ -28,13 +28,13 @@ function helpExec(args: string[], message: Message, d: number) {
     }
 }
 
-function gethelp(args: string[], currentGroup: commandGroup, channelID: string, origin: string, initial: boolean) {
+function gethelp(args: { lowercase: string, original: string }[], currentGroup: commandGroup, channelID: string, origin: string, initial: boolean) {
     let space = " "
     if (initial) space = ""
     if (args.length === 1) {
-        let subcommand = currentGroup.getsubcommand(args[0])
+        let subcommand = currentGroup.getsubcommand(args[0].lowercase)
         if (subcommand === null) {
-            let subcommandgroup = currentGroup.getsubcommandgroup(args[0])
+            let subcommandgroup = currentGroup.getsubcommandgroup(args[0].lowercase)
             if (subcommandgroup === null) {
                 if (!initial) {
                     sendMessage(channelID, `Command group \`${origin}${currentGroup.name}\` does not have a subcommand \`${args[0]}\`.`)
@@ -56,7 +56,7 @@ function gethelp(args: string[], currentGroup: commandGroup, channelID: string, 
         }
     }
     else {
-        let subcommandgroup = currentGroup.getsubcommandgroup(args[0])
+        let subcommandgroup = currentGroup.getsubcommandgroup(args[0].lowercase)
         if (subcommandgroup === null) {
             if (!initial) {
                 sendMessage(channelID, `Command group \`${origin}${currentGroup.name}\` does not have a subcommandgroup \`${args[0]}\`.`)

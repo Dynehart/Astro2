@@ -2,8 +2,8 @@ import { GuildMember, Message } from "discord.js";
 import { Corpnames, prefix, rslevels, wsTypes } from "../../config/config.js";
 import { sendMessage } from "../bot.js";
 
-class commandArgument {
-    //Superclass of all command arguments. DO NOT use for plain arguments. Use textArgument instead
+abstract class commandArgument {
+    //Superclass of all command arguments.
     readonly name: string
     //Type: 0 = regular argument, 1 = optional argument, 2 = multiple arguments, 3 multiple arguments or none
     readonly argType: number
@@ -144,7 +144,7 @@ class commandGroup {
         }
         return null
     }
-    public call(commandName: string, args: string[], message: Message, d: number, origin: string, initial: boolean) {
+    public call(commandName: string, args: { lowercase: string, original: string }[], message: Message, d: number, origin: string, initial: boolean) {
         let space = " "
         if (initial) space = ""
         let validCommand = false
@@ -156,7 +156,7 @@ class commandGroup {
         })
         this.subcommandgroups.forEach(subcommandgroup => {
             if (subcommandgroup.name === commandName || subcommandgroup.aliases.some(alias => alias == commandName)) {
-                subcommandgroup.call(args[0], args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+                subcommandgroup.call(args[0].lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
                 validCommand = true
             }
         })
@@ -180,11 +180,11 @@ class command {
     readonly usage: string
     readonly allaliases: string = ""
     private permissionLimit: (member: GuildMember) => boolean
-    private execute: (args: string[], message: Message, d: number) => void
+    private execute: (args: { lowercase: string, original: string }[], message: Message, d: number) => void
     private channellimit: string[][]
     private deleteCommandMessage: boolean
     readonly hideHelp: boolean
-    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: string[], message: Message, d: number) => void, channellimit: string[][], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
+    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message, d: number) => void, channellimit: string[][], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
         this.name = name
         this.aliases = aliases
         this.args = args
@@ -222,7 +222,7 @@ class command {
         this.channellimit = channellimit
         this.deleteCommandMessage = deleteCommandMessage
     }
-    public call(args: string[], message: Message, d: number, origin: string) {
+    public call(args: { lowercase: string, original: string }[], message: Message, d: number, origin: string) {
         if (this.permissionLimit(message.member)) {
             if (this.channellimit.some(thischannelIDs => thischannelIDs.some(thischannelID => thischannelID === message.channel.id)) || this.channellimit.length === 0) {
                 if (args.length === 0 && this.minargs !== 0) {
@@ -233,10 +233,10 @@ class command {
                     let k = 0
                     while (verified && k < args.length) {
                         if (k < this.args.length - 1) {
-                            verified = this.args[k].validateArgument(args[k])
+                            verified = this.args[k].validateArgument(args[k].lowercase)
                         }
                         else {
-                            verified = this.args[this.args.length - 1].validateArgument(args[k])
+                            verified = this.args[this.args.length - 1].validateArgument(args[k].lowercase)
                         }
                         k++
                     }

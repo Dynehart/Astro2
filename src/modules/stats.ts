@@ -16,12 +16,12 @@ function initstats(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function statsrsExec(args: string[], message: Message, d: number) {
+function statsrsExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     if (args.length === 0) {
         sendRSstats(d, message.member, message.channel.id);
     }
     else if (args.length === 1) {
-        getmember(message.channel.id, args[0], message.member.id, false)
+        getmember(message.channel.id, args[0].lowercase, message.member.id, false)
             .then(async member => {
                 if (member !== null) {
                     sendRSstats(d, member, message.channel.id);
@@ -29,11 +29,11 @@ function statsrsExec(args: string[], message: Message, d: number) {
             })
     }
 }
-function statstoprsExec(args: string[], message: Message, d: number) {
+function statstoprsExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     let timeframecheck = ""
     let runlevelcheck = ""
-    const timeframeDays = parseInt(args[1])
-    const rslevel = parseInt(args[0]) - 3
+    const timeframeDays = parseInt(args[1].lowercase)
+    const rslevel = parseInt(args[0].lowercase) - 3
     if (rslevel + 3 !== 0) {
         runlevelcheck = `AND level = ${rslevel} `
     }

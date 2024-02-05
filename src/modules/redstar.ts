@@ -52,22 +52,22 @@ function initRS(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-async function rsbanaddExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function rsbanaddExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         await queryDB(`DELETE FROM rsbannedplayers WHERE playerID = ${member.id}`)
-        await queryDB(`INSERT INTO rsbannedplayers(playerID, level) VALUES (${member.id}, ${args[1]})`)
-        sendMessage(message.channel.id, `${member.displayName} has been banned from participation in all red star queues level ${args[1]} and higher.`)
+        await queryDB(`INSERT INTO rsbannedplayers(playerID, level) VALUES (${member.id}, ${args[1].lowercase})`)
+        sendMessage(message.channel.id, `${member.displayName} has been banned from participation in all red star queues level ${args[1].lowercase} and higher.`)
     }
 }
-async function rsbanremoveExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function rsbanremoveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         await queryDB(`DELETE FROM rsbannedplayers WHERE playerID = ${member.id}`)
         sendMessage(message.channel.id, `The rsban on ${member.displayName}, if there was one, has been alleviated.`)
     }
 }
-async function rsbanlistExec(args: string[], message: Message, d: number) {
+async function rsbanlistExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     const bannedPlayers = await queryDB(`SELECT playerID, level FROM rsbannedplayers`)
     let content = "Level - Player"
     for (let i = 0; i < bannedPlayers.length; i++) {
@@ -82,7 +82,7 @@ async function rsbanlistExec(args: string[], message: Message, d: number) {
         }
     }
 }
-function pingExec(args: string[], message: Message, d: number) {
+function pingExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     isPlayerInQueues(message.author.id)
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
@@ -95,7 +95,7 @@ function pingExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function subExec(args: string[], message: Message, d: number) {
+function subExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     const rsLevel = getrslevel(message.channel)
     getLastStartedQueue(rsLevel)
         .then(lastQueue => {
@@ -109,8 +109,8 @@ function subExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function rsruninfoExec(args: string[], message: Message, d: number) {
-    const ID = parseInt(args[0])
+function rsruninfoExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const ID = parseInt(args[0].lowercase)
     getQueueByID(ID)
         .then(queue => {
             if (queue !== null) {
@@ -122,17 +122,17 @@ function rsruninfoExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function modonExec(args: string[], message: Message, d: number) {
+function modonExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     getRSModules()
         .then(allmods => {
-            if (allmods.some(thismod => thismod.name.toLowerCase() === args[0])) {
+            if (allmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
                 getPlayerRSModules(message.member.id)
                     .then(async rsmods => {
-                        if (rsmods.some(thismod => thismod.name.toLowerCase() === args[0])) {
+                        if (rsmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
                             sendMessage(message.channel.id, "You already have this module installed!")
                         }
                         else {
-                            let mod = allmods.find(thismod => thismod.name.toLowerCase() === args[0])
+                            let mod = allmods.find(thismod => thismod.name.toLowerCase() === args[0].lowercase)
                             queryDB(`INSERT INTO rsmodequip(modID, userID) VALUES (${mod.ID}, ${message.member.id})`)
                             sendMessage(message.channel.id, `${mod.name} enabled for ${message.member.displayName}`)
                         }
@@ -145,14 +145,14 @@ function modonExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function modoffExec(args: string[], message: Message, d: number) {
+function modoffExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     getRSModules()
         .then(allmods => {
-            if (allmods.some(thismod => thismod.name.toLowerCase() === args[0])) {
+            if (allmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
                 getPlayerRSModules(message.member.id)
                     .then(rsmods => {
-                        if (rsmods.some(thismod => thismod.name.toLowerCase() === args[0])) {
-                            let mod = rsmods.find(thismod => thismod.name.toLowerCase() === args[0])
+                        if (rsmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
+                            let mod = rsmods.find(thismod => thismod.name.toLowerCase() === args[0].lowercase)
                             queryDB(`DELETE FROM rsmodequip WHERE userID = ${message.member.id} AND modID = ${mod.ID}`)
                             sendMessage(message.channel.id, `${mod.name} disabled for ${message.member.displayName}`)
                         }
@@ -168,7 +168,7 @@ function modoffExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function modviewExec(args: string[], message: Message, d: number) {
+function modviewExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     getPlayerRSModules(message.member.id)
         .then(rsmods => {
             let list = `${message.member.displayName} - `
@@ -184,7 +184,7 @@ function modviewExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function modlistExec(args: string[], message: Message, d: number) {
+function modlistExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     getRSModules()
         .then(rsmods => {
             let list = "`Module name| I |You should have:\n------------------------------"
@@ -203,7 +203,7 @@ function modlistExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function rsnotifyExec(args: string[], message: Message, d: number) {
+function rsnotifyExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     queryDB(`SELECT notificationPreference FROM notificationOptions WHERE userID = ${message.member.id}`)
         .then(optionValue => {
             let currentPreference: number
@@ -231,7 +231,7 @@ function rsnotifyExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-async function inExec(args: string[], message: Message, d: number) {
+async function inExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     const rsLevel = getrslevel(message.channel)
     const bannedPlayers = await queryDB(`SELECT playerID, level FROM rsbannedplayers`)
     if (bannedPlayers.some(bannedplayer => bannedplayer.playerID === message.member.id && bannedplayer.level <= rsLevel)) {
@@ -251,7 +251,7 @@ async function inExec(args: string[], message: Message, d: number) {
             .catch(err => { })
     }
 }
-async function guestExec(args: string[], message: Message, d: number) {
+async function guestExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     const rsLevel = getrslevel(message.channel)
     const bannedPlayers = await queryDB(`SELECT playerID, level FROM rsbannedplayers`)
     if (bannedPlayers.some(bannedplayer => bannedplayer.playerID === message.member.id && bannedplayer.level <= rsLevel)) {
@@ -261,7 +261,7 @@ async function guestExec(args: string[], message: Message, d: number) {
         addToQueue(rsLevel, message.member, true, d)
     }
 }
-function outExec(args: string[], message: Message, d: number) {
+function outExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     isPlayerInQueues(message.author.id)
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
@@ -274,7 +274,7 @@ function outExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function removeguestExec(args: string[], message: Message, d: number) {
+function removeguestExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     queryDB(`SELECT level, type FROM rsqueueuser WHERE playerID = ${message.member.id} AND type = 1`)
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
@@ -287,7 +287,7 @@ function removeguestExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-function startExec(args: string[], message: Message, d: number) {
+function startExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     isPlayerInQueues(message.author.id)
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
@@ -300,7 +300,7 @@ function startExec(args: string[], message: Message, d: number) {
         })
         .catch(err => { })
 }
-async function queueExec(args: string[], message: Message, d: number) {
+async function queueExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     const rsLevel = getrslevel(message.channel)
     sendRSEmbed(rsLevel, false)
 }

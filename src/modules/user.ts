@@ -35,12 +35,12 @@ function initUser(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function usergiveExec(args: string[], message: Message, d: number) {
-    getmember(message.channel.id, args[0], message.member.id, false)
+function usergiveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    getmember(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async member => {
             if (member !== null) {
                 for (let index = 1; index < args.length; index++) {
-                    let role = await getrole(message.channel.id, args[index], message.member.id, false)
+                    let role = await getrole(message.channel.id, args[index].lowercase, message.member.id, false)
                     if (role !== null) {
                         if (canManageRole(role, message.member)) {
                             if (role.position < getSelfMember().roles.highest.position) {
@@ -64,12 +64,12 @@ function usergiveExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function usertakeExec(args: string[], message: Message, d: number) {
-    getmember(message.channel.id, args[0], message.member.id, false)
+function usertakeExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    getmember(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async member => {
             if (member !== null) {
                 for (let index = 1; index < args.length; index++) {
-                    let role = await getrole(message.channel.id, args[index], message.member.id, false)
+                    let role = await getrole(message.channel.id, args[index].lowercase, message.member.id, false)
                     if (role !== null) {
                         if (canManageRole(role, message.member)) {
                             if (role.position < getSelfMember().roles.highest.position) {
@@ -93,12 +93,12 @@ function usertakeExec(args: string[], message: Message, d: number) {
             }
         })
 }
-function userinfoExec(args: string[], message: Message, d: number) {
+function userinfoExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     if (args.length === 0) {
         senduserinfo(message.member)
     }
     else if (args.length === 1) {
-        getmember(message.channel.id, args[0], message.author.id, false)
+        getmember(message.channel.id, args[0].lowercase, message.author.id, false)
             .then(member => {
                 if (member !== null) {
                     senduserinfo(member)
@@ -120,17 +120,17 @@ function userinfoExec(args: string[], message: Message, d: number) {
         sendEmbed(message.channel.id, "", infoembed)
     }
 }
-function usersearchExec(args: string[], message: Message, d: number) {
+function usersearchExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
     getallMembers()
         .then(allmembers => {
             let membernames: string[] = []
             allmembers.forEach(thismember => {
-                if (thismember.displayName.toLowerCase().includes(args[0]) || thismember.user.username.toLowerCase().includes(args[0])) {
+                if (thismember.displayName.toLowerCase().includes(args[0].lowercase) || thismember.user.username.toLowerCase().includes(args[0].lowercase)) {
                     membernames.push(`${thismember.displayName} / ${thismember.user.tag}`)
                 }
             })
             if (membernames.length === 0) {
-                sendMessage(message.channel.id, `There are no members whose name contains \`${args[0]}\``)
+                sendMessage(message.channel.id, `There are no members whose name contains \`${args[0].original}\``)
             }
             else {
                 let contents: string[] = []
@@ -151,7 +151,7 @@ function usersearchExec(args: string[], message: Message, d: number) {
                 for (let i = 0; i < contents.length; i++) {
                     let listembed = new EmbedBuilder()
                     if (i === 0) {
-                        listembed.setTitle(`There are ${membernames.length} Members whose name contains \`${args[0]}\`. These are:`)
+                        listembed.setTitle(`There are ${membernames.length} Members whose name contains \`${args[0].original}\`. These are:`)
                     }
                     else {
                         listembed.setTitle(`Continued:`)
@@ -162,8 +162,8 @@ function usersearchExec(args: string[], message: Message, d: number) {
             }
         })
 }
-async function banExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function banExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         member.ban().then(() => {
             sendMessage(message.channel.id, `${member.displayName} (${member.user.tag}) has been successfully banned 🔨`)
@@ -172,8 +172,8 @@ async function banExec(args: string[], message: Message, d: number) {
         })
     }
 }
-async function kickExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function kickExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         member.kick().then(() => {
             sendMessage(message.channel.id, `${member.displayName} (${member.user.tag}) has been successfully kicked 👢`)
@@ -182,8 +182,8 @@ async function kickExec(args: string[], message: Message, d: number) {
         })
     }
 }
-function hackbanExec(args: string[], message: Message, d: number) {
-    message.guild.bans.create(args[0]).then(bannedUser => {
+function hackbanExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    message.guild.bans.create(args[0].lowercase).then(bannedUser => {
         //@ts-ignore
         if (bannedUser.user !== undefined && bannedUser.user !== null) {
             //@ts-ignore
@@ -201,16 +201,16 @@ function hackbanExec(args: string[], message: Message, d: number) {
         sendMessage(message.channel.id, "This user couldn't be banned")
     })
 }
-async function avatarExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function avatarExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         sendMessage(message.channel.id, member.displayAvatarURL({ size: 4096 }))
     }
 }
 //let text = 
-async function recruitExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
-    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[1] || thiscorp.shortname.toLowerCase() === args[1])
+async function recruitExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[1].lowercase || thiscorp.shortname.toLowerCase() === args[1].lowercase)
     if (member !== null) {
         const name = member.displayName.replace(/\[(.*?)\]/, "").trim()
         await member.roles.remove(representtiverole)
@@ -222,8 +222,8 @@ async function recruitExec(args: string[], message: Message, d: number) {
         sendMessage(message.channel.id, `<@${member.id}> has been successfully recruited into the ${Corpnames[corpIndex].name} Corporation. Request to join the Corp ingame. <@&${corpRoles[corpIndex]}> give them a warm welcome over there!`);
     }
 }
-async function retireExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function retireExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         if (member.roles.cache.some(thisrole => thisrole.id === memberrole) && member.roles.highest.position < getSelfMember().roles.highest.position) {
             await member.roles.add(retiredrole)
@@ -240,11 +240,11 @@ async function retireExec(args: string[], message: Message, d: number) {
         }
     }
 }
-async function setcorpExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function setcorpExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         const split = /\[(.*?)\]/
-        const newcorp = args.slice(1).join(" ")
+        const newcorp = args.slice(1).map(a => a.original).join(" ")
         let corp = split.exec(member.displayName)
         let oldcorp: string
         if (corp === null) oldcorp = "None"
@@ -254,11 +254,11 @@ async function setcorpExec(args: string[], message: Message, d: number) {
         sendMessage(message.channel.id, `<@${member.id}>'s Corp was successfully changed from ${oldcorp} to ${newcorp}`)
     }
 }
-async function setnickExec(args: string[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0], message.member.id, false)
+async function setnickExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         const split = /\[(.*?)\]/
-        const newname = args.slice(1).join(" ")
+        const newname = args.slice(1).map(a => a.original).join(" ")
         const oldname = member.displayName.replace(split, "").trim()
         const corp = split.exec(member.displayName)
         let name: string

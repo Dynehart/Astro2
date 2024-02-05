@@ -105,7 +105,7 @@ bot.on("messageCreate", (message) => {
     const split = /"(.*?)"/g;
     let result: string[] = []
     let current: RegExpExecArray
-    while (current = split.exec(message.content.toLowerCase())) {
+    while (current = split.exec(message.content)) {
         result.push(current.pop());
     }
 
@@ -126,7 +126,7 @@ bot.on("messageCreate", (message) => {
         autoresponsecheck(message, d, [...allargs])
 
         let commandName = allargs[0]
-        let args = allargs.slice(1)
+        let args = allargs.slice(1).map(arg => { return { lowercase: arg.toLowerCase(), original: arg } })
 
         if (commandName.startsWith(prefix)) {
             BaseCommandGroup.call(commandName.slice(prefix.length), args, message, d, "", true)
