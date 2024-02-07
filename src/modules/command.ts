@@ -144,7 +144,7 @@ class commandGroup {
         }
         return null
     }
-    public call(commandName: string, args: { lowercase: string, original: string }[], message: Message, d: number, origin: string, initial: boolean) {
+    public call(commandName: string, args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string, initial: boolean) {
         let space = " "
         if (initial) space = ""
         let validCommand = false
@@ -180,11 +180,11 @@ class command {
     readonly usage: string
     readonly allaliases: string = ""
     private permissionLimit: (member: GuildMember) => boolean
-    private execute: (args: { lowercase: string, original: string }[], message: Message, d: number) => void
+    private execute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void
     private channellimit: string[][]
     private deleteCommandMessage: boolean
     readonly hideHelp: boolean
-    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message, d: number) => void, channellimit: string[][], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
+    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void, channellimit: string[][], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
         this.name = name
         this.aliases = aliases
         this.args = args
@@ -222,7 +222,7 @@ class command {
         this.channellimit = channellimit
         this.deleteCommandMessage = deleteCommandMessage
     }
-    public call(args: { lowercase: string, original: string }[], message: Message, d: number, origin: string) {
+    public call(args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string) {
         if (this.permissionLimit(message.member)) {
             if (this.channellimit.some(thischannelIDs => thischannelIDs.some(thischannelID => thischannelID === message.channel.id)) || this.channellimit.length === 0) {
                 if (args.length === 0 && this.minargs !== 0) {

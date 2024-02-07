@@ -2,8 +2,8 @@ const prefix = '.'
 const SFAcorp = "454867033729794069"
 
 //These arrays all need to be indexed with the same corps at the same indexes. From left to right: Spfl, Ender, BMC, WC, DS, SOL, YAL, C55, SL. Further corps need to be added to the right
-const corpRoles = ["471353432133861387", "704536599198957569", "471355539478020096", "592494094509670406", "545005992941715485", "878036266439020594", "771412515213148191", "934891670724546560", "1144081258943631432"] 
-const Corpnames = [{ "name": "Spacefleet", "shortname": "SPFL"}, { "name": "Ender", "shortname": "ENDER"}, { "name": "Black Mirror Co", "shortname": "BMC"}, { "name": "WinterComes", "shortname": "WC"}, { "name": "Deadspace", "shortname": "DS"}, { "name": "Solysis", "shortname": "SOL"}, { "name": "яко лютеница", "shortname": "YAL"}, { "name": "Canada55", "shortname": "C55"}, { "name": "Shrek Legion", "shortname": "SL"}]
+const corpRoles = ["471353432133861387", "704536599198957569", "471355539478020096", "592494094509670406", "545005992941715485", "878036266439020594", "771412515213148191", "934891670724546560", "1144081258943631432"]
+const Corpnames = [{ "name": "Spacefleet", "shortname": "SPFL" }, { "name": "Ender", "shortname": "ENDER" }, { "name": "Black Mirror Co", "shortname": "BMC" }, { "name": "WinterComes", "shortname": "WC" }, { "name": "Deadspace", "shortname": "DS" }, { "name": "Solysis", "shortname": "SOL" }, { "name": "яко лютеница", "shortname": "YAL" }, { "name": "Canada55", "shortname": "C55" }, { "name": "Shrek Legion", "shortname": "SL" }]
 const botchannels = ["520417476517953557", "455438948051976203", "790220818041798697", "606736666157383711", "790220277618311188"]
 const welcomechannel = "520419411421560848"
 const logchannel = "455438948051976203"
@@ -19,9 +19,9 @@ const adminRole = "468964957023895563"
 const DevRole = "514265759279480847"
 
 //from left to right: RS3, RS4, RS5, RS6, RS7, RS8, RS9, RS10, RS11
-const rschannels = ["798228442138804274", "798228973720829983", "798229004549226566", "798229034600497212", "773652137955557416", "713832918295904367", "713832945689034832", "713832972133859348", "780154692248010812"]
+const rschannels: { regular: string, dark?: string }[] = [{ regular: "798228442138804274" }, { regular: "798228973720829983" }, { regular: "798229004549226566" }, { regular: "798229034600497212" }, { regular: "773652137955557416", dark: "1204723280351858719" }, { regular: "713832918295904367", dark: "1204723300669067284" }, { regular: "713832945689034832", dark: "1204723318020771861" }, { regular: "713832972133859348", dark: "1204723338765930566" }, { regular: "780154692248010812", dark: "1204723360576307250" }]
 const rslevels = [3, 4, 5, 6, 7, 8, 9, 10, 11]
-const rsroles = ["772599455681085470", "772599415751704578", "718264052962557952", "514779527457800196", "514779666947768320", "514779745142046749", "514779811751657472", "582562459706064904", "705734947553542185"]
+const rsroles: { regular: string, dark?: string }[] = [{ regular: "772599455681085470" }, { regular: "772599415751704578" }, { regular: "718264052962557952" }, { regular: "514779527457800196" }, { regular: "514779666947768320", dark: "1204728347993710603" }, { regular: "514779745142046749", dark: "1204728379568558091" }, { regular: "514779811751657472", dark: "1204728397436030976" }, { regular: "582562459706064904", dark: "1204728414473293864" }, { regular: "705734947553542185", dark: "1204728431540174848" }]
 const AFKTimeout = 3600000
 const runlogchannel = "797502406837534731"
 
@@ -41,37 +41,37 @@ const dispatchSpeed = [null, 240, 176, 130, 96, 70, 50, 36, 26, 18, 12]
 
 
 export {
-    rschannels,
-    corpRoles,
-    coordRole,
-    prefix,
-    AFKTimeout,
-    rsroles,
-    retiredrole,
-    representtiverole,
-    Corpnames,
-    runlogchannel,
-    SFAcorp,
-    captainRole,
-    botchannels,
-    GreeterRole,
-    adminRole,
-    DevRole,
-    WSRoles,
-    wsTypes,
-    signupchannel,
-    memberrole,
-    destinydamage,
-    blastHP,
-    areaHP,
-    TWSpeed,
-    dispatchSpeed,
-    rslevels,
-    allWSrole,
-    rosterBuddiesRole,
-    mustReadChannel,
-    rosterbuildingchannel,
-    welcomechannel,
-    logchannel,
-    auditlogchannel
+    rschannels,
+    corpRoles,
+    coordRole,
+    prefix,
+    AFKTimeout,
+    rsroles,
+    retiredrole,
+    representtiverole,
+    Corpnames,
+    runlogchannel,
+    SFAcorp,
+    captainRole,
+    botchannels,
+    GreeterRole,
+    adminRole,
+    DevRole,
+    WSRoles,
+    wsTypes,
+    signupchannel,
+    memberrole,
+    destinydamage,
+    blastHP,
+    areaHP,
+    TWSpeed,
+    dispatchSpeed,
+    rslevels,
+    allWSrole,
+    rosterBuddiesRole,
+    mustReadChannel,
+    rosterbuildingchannel,
+    welcomechannel,
+    logchannel,
+    auditlogchannel
 }

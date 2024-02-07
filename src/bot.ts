@@ -99,7 +99,7 @@ bot.on("messageDelete", async (oldmessage) => {
 })
 bot.on("messageCreate", (message) => {
     const d = Date.now()
-    if (message.author === bot.user) {
+    if (message.author === bot.user || !message.inGuild()) {
         return;
     }
     const split = /"(.*?)"/g;
