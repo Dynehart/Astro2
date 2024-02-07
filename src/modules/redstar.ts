@@ -5,7 +5,7 @@ import { Colors, EmbedBuilder, GuildMember, GuildTextBasedChannel, Message } fro
 import { fetchMember, fetchMessage, fetchRole, getmember, playerInputChoice, sendDM, sendEmbed, sendMessage } from "../bot.js"
 import { getPlayerRSNotificationPreference, hasCaptainPerms, hasCoordPerms, hasdefaultPerms } from "./user.js"
 import { commandGroup, command, allArguments } from "./command.js"
-import { boolToInt } from "./utils.js"
+import { boolToInt, getD, getDark } from "./utils.js"
 
 let lastRSrolemention: { regular: number, dark?: number }[] = [{ regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }]
 
@@ -314,7 +314,7 @@ function getrslevel(channel: GuildTextBasedChannel) {
     }
     else {
         const dindex = rschannels.findIndex(thisID => channel.id === thisID.dark)
-        if (index !== -1) {
+        if (dindex !== -1) {
             return { level: dindex, dark: true }
         }
         else {
@@ -424,7 +424,7 @@ async function removeFromQueue(level: { level: number, dark: boolean }, player: 
                         content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]}) ${name} left`
                     }
                     else {
-                        content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]}) ${name} left because they were in a starting ${getD(reason.dark)}RS${reason.level} queue`
+                        content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]}) ${name} left because they were in a starting ${getD(reason.dark)}RS${reason.level + 3} queue`
                     }
                     sendMessage(rschannels[level.level][getDark(level.dark)], content)
                     sendRSEmbed(level, false)
@@ -782,15 +782,6 @@ async function getQueueByID(id: number) {
                 reject(err)
             })
     })
-}
-
-function getDark(dark: boolean) {
-    if (dark) return "dark"
-    else return "regular"
-}
-function getD(dark: boolean) {
-    if (dark) return "D"
-    else return ""
 }
 
 async function initAFKTimeoutCheckLoop() {

@@ -67,12 +67,12 @@ class regexpArgument extends commandArgument {
     }
 }
 class partofStringArgument extends commandArgument {
-    protected partof: string[][]
-    constructor(name: string, type: number, partof: string[][]) {
+    protected partof: string[]
+    constructor(name: string, type: number, partof: string[]) {
         super(name, type)
         this.partof = partof
         this.validateArgument = (rawInput: string) => {
-            if (this.partof.some(thisarray => thisarray.some(thisvalue => thisvalue.toLowerCase() === rawInput))) {
+            if (this.partof.some(thisvalue => thisvalue.toLowerCase() === rawInput)) {
                 return true
             }
             else {
@@ -293,8 +293,8 @@ class command {
 
 //Append new arguments to thsi array. DO NOT declare arguments locally. The argument classes are not exported for a reason.
 const allArguments = {
-    "corpnameArgument": new partofStringArgument("corpname", 0, [Corpnames.map(thiscorp => thiscorp.name), Corpnames.map(thiscorp => thiscorp.shortname)]),
-    "wstypeArgument": new partofStringArgument("wstype", 0, [wsTypes.map(thistype => thistype.name), wsTypes.map(thistype => thistype.shortname)]),
+    "corpnameArgument": new partofStringArgument("corpname", 0, Corpnames.flatMap(thiscorp => [thiscorp.name, thiscorp.shortname])),
+    "wstypeArgument": new partofStringArgument("wstype", 0, wsTypes.flatMap(thistype => [thistype.name, thistype.shortname])),
     "wssizeArgument": new specificNumberArgument("size", 0, [5, 10, 15]),
     "membersArgument": new textArgument("members", 2),
     "shipcountArgument": new numberArgument("shipcount", 0, 1, Infinity),
@@ -315,12 +315,12 @@ const allArguments = {
     "commandArgument": new textArgument("command(s)", 3),
     "rsmodArgument": new textArgument("module", 0),
     "memberidArgument": new textArgument("memberID", 0),
-    "rslevelor0Argument": new specificNumberArgument("rslevel", 0, rslevels.concat(0)),
+    "drslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => [`${level}`, `d${level}`])),
     "searchstringArgument": new textArgument("searchstring", 0),
     "corpArgument": new textArgument("corp", 2),
     "nicknameArgument": new textArgument("nickname", 2),
     "emojiArgument": new regexpArgument("emoji", 0, /<a?:.+:(\d+)>/),
-    "messagecountArgument": new numberArgument("messagecount", 0, 1, 100)
+    "messagecountArgument": new numberArgument("messagecount", 0, 1, 100),
 }
 
 export {

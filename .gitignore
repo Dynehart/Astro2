@@ -2,3 +2,6 @@
 /config
 /Data
 auth.json
+/.vscode
+/dist
+/.env

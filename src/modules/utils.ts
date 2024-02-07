@@ -54,8 +54,19 @@ function boolToInt(i: boolean) {
     else return 0
 }
 
+function getDark(dark: boolean) {
+    if (dark) return "dark"
+    else return "regular"
+}
+function getD(dark: boolean) {
+    if (dark) return "D"
+    else return ""
+}
+
 export {
     getFormattedDeltaTime,
     getTimestampFromFormattedTime,
-    boolToInt
+    boolToInt,
+    getD,
+    getDark
 }
