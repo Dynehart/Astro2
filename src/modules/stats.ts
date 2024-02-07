@@ -9,7 +9,7 @@ import { getD } from "./utils.js";
 
 function initstats(BaseCommandGroup: commandGroup) {
     const statsrs = new command("redstar", ["rs"], [allArguments.optmemberArgument], "Gets the RS stats of a specified User. If no User is specified, gets your own RS stats.", statsrsExec, [botchannels], hasdefaultPerms, true, false)
-    const statstoprs = new command("toprs", [], [allArguments.drslevelor0Argument, allArguments.pastdaysArgument], "Get the top RS runners in a specified RS level and timeframe. Use `0` for all time and all levels.", statstoprsExec, [botchannels], hasdefaultPerms, true, false)
+    const statstoprs = new command("toprs", [], [allArguments.drslevelor0Argument, allArguments.pastdaysArgument], "Get the top RS runners in a specified RS level and timeframe. Use `0` for all time and all levels. For DRS, add a 'd' in front of the level", statstoprsExec, [botchannels], hasdefaultPerms, true, false)
     const stats = new commandGroup("stats", ["stat"], [], [statsrs, statstoprs], "Command group for managing statistics", false)
 
     BaseCommandGroup.addsubcommandgroup(stats)
