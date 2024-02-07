@@ -5,7 +5,7 @@ import { sendMessage } from "../bot.js";
 abstract class commandArgument {
     //Superclass of all command arguments.
     readonly name: string
-    //Type: 0 = regular argument, 1 = optional argument, 2 = multiple arguments, 3 multiple arguments or none
+    //Type: 0 = regular argument, 1 = optional argument, 2 = multiple arguments, 3 = multiple arguments or none
     readonly argType: number
     constructor(name: string, argType: number) {
         this.name = name
