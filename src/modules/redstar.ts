@@ -1,6 +1,6 @@
 import { queryDB } from "./DB.js"
 import { RowDataPacket } from "mysql2"
-import { rschannels, AFKTimeout, prefix, rsroles, runlogchannel, botchannels } from "../../config/config.js"
+import { rschannels, AFKTimeout, prefix, rsroles, runlogchannel, botchannels, maxRSsize } from "../../config/config.js"
 import { Colors, EmbedBuilder, GuildMember, GuildTextBasedChannel, Message } from "discord.js"
 import { fetchMember, fetchMessage, fetchRole, getmember, playerInputChoice, sendDM, sendEmbed, sendMessage } from "../bot.js"
 import { getPlayerRSNotificationPreference, hasCaptainPerms, hasCoordPerms, hasdefaultPerms } from "./user.js"
@@ -334,7 +334,7 @@ function pingQueue(level: { level: number, dark: boolean }, d: number) {
             else {
                 content += `${getD(level.dark)}RS${level.level + 3}`
             }
-            content += ` ${currentQueue.length}/4 anyone?`
+            content += ` ${currentQueue.length}/${maxRSsize[getDark(level.dark)]} anyone?`
             content = content.slice(0, content.length - 1)
             sendMessage(rschannels[level.level][getDark(level.dark)], content)
         })
@@ -343,7 +343,7 @@ function pingQueue(level: { level: number, dark: boolean }, d: number) {
 async function displayRSqueue(queue: { "queue": { "shortID": number, "ID": number, "level": number, "dark": boolean }, "queueUsers": { "playerID": string, "isGuest": boolean }[] }, channelID: string) {
     let content = `Started at: <t:${Math.floor(queue.queue.ID / 1000)}:f>\n`
     let logembed = new EmbedBuilder
-    logembed.setTitle(`${getD(queue.queue.dark)}RS${queue.queue.level + 3} (${queue.queueUsers.length}/4)`)
+    logembed.setTitle(`${getD(queue.queue.dark)}RS${queue.queue.level + 3} (${queue.queueUsers.length}/${maxRSsize[getDark(queue.queue.dark)]})`)
     const color = (await fetchRole(rsroles[queue.queue.level][getDark(queue.queue.dark)])).color
     logembed.setColor(color)
     let k = 0
@@ -375,20 +375,20 @@ async function addToQueue(level: { level: number, dark: boolean }, player: Guild
         }
         getCurrentQueue(level)
             .then(currentQueue => {
-                if (currentQueue.length < 4) {
+                if (currentQueue.length < maxRSsize[getDark(level.dark)]) {
                     queryDB(`INSERT INTO rsqueueuser(level, dark, playerID, lastseenTimestamp, joinedTimestamp, AFKwarned, type) VALUES (${level.level}, ${boolToInt(level.dark)}, ${player.id}, ${d}, ${d}, 0, ${type})`)
                         .then(() => {
-                            if (currentQueue.length >= 3) {
-                                sendMessage(rschannels[level.level][getDark(level.dark)], `${getD(level.dark)}RS${level.level + 3} (4/4) ${name} joined!`)
+                            if (currentQueue.length >= maxRSsize[getDark(level.dark)] - 1) {
+                                sendMessage(rschannels[level.level][getDark(level.dark)], `${getD(level.dark)}RS${level.level + 3} (${maxRSsize[getDark(level.dark)]}/${maxRSsize[getDark(level.dark)]}) ${name} joined!`)
                                 StartQueue(level, d)
                             }
                             else {
                                 if (lastRSrolemention[level.level][getDark(level.dark)] < (d - 300000)) {
-                                    sendMessage(rschannels[level.level][getDark(level.dark)], `<@&${rsroles[level.level][getDark(level.dark)]}> (${currentQueue.length + 1}/4) ${name} joined!`)
+                                    sendMessage(rschannels[level.level][getDark(level.dark)], `<@&${rsroles[level.level][getDark(level.dark)]}> (${currentQueue.length + 1}/${maxRSsize[getDark(level.dark)]}) ${name} joined!`)
                                     lastRSrolemention[level.level][getDark(level.dark)] = d
                                 }
                                 else {
-                                    sendMessage(rschannels[level.level][getDark(level.dark)], `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length + 1}/4) ${name} joined!`)
+                                    sendMessage(rschannels[level.level][getDark(level.dark)], `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length + 1}/${maxRSsize[getDark(level.dark)]}) ${name} joined!`)
                                 }
                                 sendRSEmbed(level, false)
                             }
@@ -421,10 +421,10 @@ async function removeFromQueue(level: { level: number, dark: boolean }, player: 
                 getCurrentQueue(level).then(async currentQueue => {
                     let content = ""
                     if (reason.level === 0) {
-                        content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/4) ${name} left`
+                        content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]}) ${name} left`
                     }
                     else {
-                        content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/4) ${name} left because they were in a starting ${getD(reason.dark)}RS${reason.level} queue`
+                        content = `${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]}) ${name} left because they were in a starting ${getD(reason.dark)}RS${reason.level} queue`
                     }
                     sendMessage(rschannels[level.level][getDark(level.dark)], content)
                     sendRSEmbed(level, false)
@@ -449,7 +449,7 @@ async function sendRSEmbed(level: { level: number, dark: boolean }, starting: bo
             let RSembed = new EmbedBuilder
             const color = (await fetchRole(rsroles[level.level][getDark(level.dark)])).color
             RSembed.setColor(color)
-            RSembed.setTitle(`Empty ${getD(level.dark)}RS${level.level + 3} (0/4)`)
+            RSembed.setTitle(`Empty ${getD(level.dark)}RS${level.level + 3} (0/${maxRSsize[getDark(level.dark)]})`)
             RSembed.setDescription(`To join the queue type \`${prefix}in\``)
             sendEmbed(rschannels[level.level][getDark(level.dark)], "", RSembed)
                 .then(sent => {
@@ -469,7 +469,7 @@ async function sendRSEmbed(level: { level: number, dark: boolean }, starting: bo
             if (starting) {
                 header = "Starting"
             }
-            RSembed.setTitle(`${header} ${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/4)`)
+            RSembed.setTitle(`${header} ${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]})`)
             let k = 0
             let content = `To join the queue type \`${prefix}in\`\n\n`
             currentQueue.forEach(async playerInQueue => {
@@ -594,7 +594,7 @@ async function logrun(level: { level: number, dark: boolean }, d: number) {
                 const runID: { ID: number, shortID: number } = (await queryDB("SELECT MAX(runID) AS ID, MAX(shortID) AS shortID FROM runlog")).map(a => { return { ID: a.ID, shortID: a.shortID } })[0]
                 let content = `Started at: <t:${Math.floor(d / 1000)}:f>\n`
                 let logembed = new EmbedBuilder
-                logembed.setTitle(`${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/4)`)
+                logembed.setTitle(`${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]})`)
                 let k = 0
                 currentQueue.forEach(async playerInQueue => {
                     const playerID = playerInQueue.playerID
@@ -625,7 +625,7 @@ async function sendQueueStartMessage(level: { level: number, dark: boolean }) {
         getCurrentQueue(level)
             .then(CurrentQueue => {
                 let k = 0
-                let content = `${getD(level.dark)}RS${level.level + 3} queue ready to run! (${CurrentQueue.length}/4)\n`
+                let content = `${getD(level.dark)}RS${level.level + 3} queue ready to run! (${CurrentQueue.length}/${maxRSsize[getDark(level.dark)]})\n`
                 let usersToDM: string[] = []
                 try {
                     CurrentQueue.forEach(async playerInQueue => {
@@ -816,7 +816,7 @@ async function initAFKTimeoutCheckLoop() {
                         .then(() => {
                             getCurrentQueue(playersToKick[j].level) //this is to get the length of the queue
                                 .then(currentQueue => {
-                                    sendMessage(rschannels[playersToKick[j].level][getDark(playersToKick[j].dark)], `RS${playersToKick[j].level + 3} (${currentQueue.length}/4) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
+                                    sendMessage(rschannels[playersToKick[j].level][getDark(playersToKick[j].dark)], `RS${playersToKick[j].level + 3} (${currentQueue.length}/${maxRSsize[getDark(playersToKick[j].dark)]}) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
                                     if (!levelsToUpdate.some(level => level.level === playersToKick[j].level && level.dark === playersToKick[j].dark)) {
                                         levelsToUpdate.push({ level: playersToKick[j].level, dark: playersToKick[j].dark === 1 })
                                     }

@@ -22,6 +22,7 @@ const DevRole = "514265759279480847"
 const rschannels: { regular: string, dark?: string }[] = [{ regular: "798228442138804274" }, { regular: "798228973720829983" }, { regular: "798229004549226566" }, { regular: "798229034600497212" }, { regular: "773652137955557416", dark: "1204723280351858719" }, { regular: "713832918295904367", dark: "1204723300669067284" }, { regular: "713832945689034832", dark: "1204723318020771861" }, { regular: "713832972133859348", dark: "1204723338765930566" }, { regular: "780154692248010812", dark: "1204723360576307250" }]
 const rslevels = [3, 4, 5, 6, 7, 8, 9, 10, 11]
 const rsroles: { regular: string, dark?: string }[] = [{ regular: "772599455681085470" }, { regular: "772599415751704578" }, { regular: "718264052962557952" }, { regular: "514779527457800196" }, { regular: "514779666947768320", dark: "1204728347993710603" }, { regular: "514779745142046749", dark: "1204728379568558091" }, { regular: "514779811751657472", dark: "1204728397436030976" }, { regular: "582562459706064904", dark: "1204728414473293864" }, { regular: "705734947553542185", dark: "1204728431540174848" }]
+const maxRSsize = { regular: 4, dark: 3 }
 const AFKTimeout = 3600000
 const runlogchannel = "797502406837534731"
 
@@ -73,5 +74,6 @@ export {
     rosterbuildingchannel,
     welcomechannel,
     logchannel,
-    auditlogchannel
+    auditlogchannel,
+    maxRSsize
 }
