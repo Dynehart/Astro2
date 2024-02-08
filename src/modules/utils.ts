@@ -49,7 +49,24 @@ function getTimestampFromFormattedTime(formattedTime: string) {
     return timestamp
 }
 
+function boolToInt(i: boolean) {
+    if (i) return 1
+    else return 0
+}
+
+function getDark(dark: boolean) {
+    if (dark) return "dark"
+    else return "regular"
+}
+function getD(dark: boolean) {
+    if (dark) return "D"
+    else return ""
+}
+
 export {
     getFormattedDeltaTime,
-    getTimestampFromFormattedTime
+    getTimestampFromFormattedTime,
+    boolToInt,
+    getD,
+    getDark
 }

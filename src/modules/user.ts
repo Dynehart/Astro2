@@ -1,5 +1,5 @@
 import { EmbedBuilder, GuildMember, Message } from "discord.js"
-import { adminRole, botchannels, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
+import { adminRole, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
 import { getallMembers, getmember, getrole, getSelfMember, sendEmbed, sendMessage } from "../bot.js"
 import { command, allArguments, commandGroup } from "./command.js"
 import { queryDB } from "./DB.js"
@@ -251,7 +251,7 @@ async function setcorpExec( args: { lowercase: string, original: string }[], mes
         else oldcorp = corp[0]
         const name = `[${newcorp}] ${member.displayName.replace(split, "").trim()}`
         await member.setNickname(name)
-        sendMessage(message.channel.id, `<@${member.id}>'s Corp was successfully changed from ${oldcorp} to ${newcorp}`)
+        sendMessage(message.channel.id, `<@${member.id}>'s Corp was successfully changed from ${oldcorp} to [${newcorp}]`)
     }
 }
 async function setnickExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
