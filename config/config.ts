@@ -1,5 +1,6 @@
 const prefix = '.'
 const SFAcorp = "968599292317151362"
+const HSCAPIkey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzOTc0MzU5OTU0MjkwMTE0NjciLCJndWlsZElkIjoiNDU0ODY3MDMzNzI5Nzk0MDY5IiwiaWF0IjoxNzA3MzM4MjIzLCJleHAiOjE3Mzg4OTU4MjMsInN1YiI6ImFwaSJ9.tlDWyMZPDrwag5IcnGfFfYpczCRAwjcxY8yp4kMcKVM"
 
 //These arrays all need to be indexed with the same corps at the same indexes. From left to right: Spfl, Ender, BMC, WC, DS, SOL, YAL, C55. Further corps need to be added to the right
 const corpRoles = ["968599292522680353", "968599292522680355", "968599292522680352", "968599292522680354", "968599292522680351", "968599292489113679", "968599292489113678", "968599292489113676"]
@@ -39,6 +40,7 @@ const blastHP = [0, 15000, 20000, 25000, 32000, 40000, 50000, 60000, 70000, 8500
 const areaHP = [0, 7000, 7500, 8000, 8500, 9000, 9500, 10000, 11000, 12000, 13000, 15000, 17000]
 const TWSpeed = [1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6]
 const dispatchSpeed = [null, 240, 176, 130, 96, 70, 50, 36, 26, 18, 12]
+const emojis = { genesis: "<:Mod_Genesis_Icon:1205108393971556352>", enrich: "<:Mod_Enrich_Icon:1205108392755073034>", rse: "<:Mod_RedStarExtender_Icon:1205108339118182451>" }
 
 
 export {
@@ -75,5 +77,7 @@ export {
     welcomechannel,
     logchannel,
     auditlogchannel,
-    maxRSsize
+    maxRSsize,
+    HSCAPIkey,
+    emojis
 }

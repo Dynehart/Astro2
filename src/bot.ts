@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, TextChannel, Guild, Message, GuildMember, Role, ChannelType, ColorResolvable, MessageReaction, User, Colors, Collection } from 'discord.js';
+import { Client, GatewayIntentBits, EmbedBuilder, TextChannel, Guild, Message, GuildMember, Role, ChannelType, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel } from 'discord.js';
 import { GreeterRole, SFAcorp, auditlogchannel, logchannel, prefix, representtiverole, welcomechannel } from '../config/config.js';
 import { autoresponsecheck } from './modules/autoresponse.js';
 import { commandGroup } from './modules/command.js';
@@ -11,6 +11,7 @@ import { initUser } from './modules/user.js';
 import { initWS } from './modules/whitestar.js';
 import { initmisc } from './modules/misc.js';
 import { config } from 'dotenv';
+import { getPlayerModuleData } from './modules/compendium.js';
 
 let SFA_Guild: Guild;
 let selfMember: GuildMember;
@@ -109,7 +110,7 @@ bot.on("messageCreate", (message) => {
         result.push(current.pop());
     }
 
-    let rawargs = message.content.toLowerCase().split('"')
+    let rawargs = message.content.split('"')
     let allargs: string[] = []
     for (let i = 0; i < rawargs.length; i++) {
         if ((i % 2 === 0 || i === rawargs.length - 1)) {
@@ -226,10 +227,10 @@ async function fetchMember(memberID: string) {
 }
 
 async function fetchChannel(channelID: string) {
-    return new Promise<TextChannel>((resolve, reject) => {
+    return new Promise<GuildTextBasedChannel>((resolve, reject) => {
         SFA_Guild.channels.fetch(channelID, {})
             .then(channel => {
-                if (channel?.type === ChannelType.GuildText) {
+                if (!channel.isVoiceBased() && channel.isTextBased() && !channel.isThreadOnly()) {
                     resolve(channel)
                 }
                 else {

@@ -251,7 +251,7 @@ async function setcorpExec( args: { lowercase: string, original: string }[], mes
         else oldcorp = corp[0]
         const name = `[${newcorp}] ${member.displayName.replace(split, "").trim()}`
         await member.setNickname(name)
-        sendMessage(message.channel.id, `<@${member.id}>'s Corp was successfully changed from ${oldcorp} to ${newcorp}`)
+        sendMessage(message.channel.id, `<@${member.id}>'s Corp was successfully changed from ${oldcorp} to [${newcorp}]`)
     }
 }
 async function setnickExec( args: { lowercase: string, original: string }[], message: Message, d: number) {

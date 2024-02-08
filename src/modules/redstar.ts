@@ -1,11 +1,12 @@
 import { queryDB } from "./DB.js"
 import { RowDataPacket } from "mysql2"
-import { rschannels, AFKTimeout, prefix, rsroles, runlogchannel, botchannels, maxRSsize } from "../../config/config.js"
+import { rschannels, AFKTimeout, prefix, rsroles, runlogchannel, botchannels, maxRSsize, emojis } from "../../config/config.js"
 import { Colors, EmbedBuilder, GuildMember, GuildTextBasedChannel, Message } from "discord.js"
 import { fetchMember, fetchMessage, fetchRole, getmember, playerInputChoice, sendDM, sendEmbed, sendMessage } from "../bot.js"
 import { getPlayerRSNotificationPreference, hasCaptainPerms, hasCoordPerms, hasdefaultPerms } from "./user.js"
 import { commandGroup, command, allArguments } from "./command.js"
 import { boolToInt, getD, getDark } from "./utils.js"
+import { getPlayerModuleData } from "./compendium.js"
 
 let lastRSrolemention: { regular: number, dark?: number }[] = [{ regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }]
 
@@ -280,7 +281,7 @@ function removeguestExec(args: { lowercase: string, original: string }[], messag
     const rsLevel = getrslevel(message.channel)
     queryDB(`SELECT level, type FROM rsqueueuser WHERE playerID = ${message.member.id} AND type = 1 AND level = ${rsLevel.level} AND dark = ${boolToInt(rsLevel.dark)}`)
         .then(queues => {
-            if (queues.length !== null) {
+            if (queues.length !== 0) {
                 removeFromQueue(rsLevel, message.member, true, { level: 0, dark: null })
             }
             else {
@@ -509,16 +510,9 @@ async function getPlayerRSSufffix(playerID: string, level: { level: number, dark
     return new Promise<string>((resolve, reject) => {
         let suffix = ""
         //Check for RS mods
-        getPlayerRSModules(playerID)
-            .then(rsmods => {
-                rsmods.forEach(rsmod => {
-                    if (rsmod.type === 0) {
-                        suffix += `:${rsmod.emojiname}:`
-                    }
-                    else {
-                        suffix += `<:${rsmod.emojiname}:${rsmod.emojiID}>`
-                    }
-                })
+        getPlayerModuleSuffix(playerID, level.dark)
+            .then(modulesuffix => {
+                suffix += modulesuffix
                 //Check for Runcount
                 queryDB(`SELECT COUNT(playerID) AS runs FROM playerinrun, runlog WHERE playerinrun.playerID = ${playerID} AND playerinrun.isGuest = 0 AND runlog.level = ${level.level} AND runlog.dark = ${boolToInt(level.dark)} AND playerinrun.runID = runlog.runID`)
                     .then(async runcount => {
@@ -548,11 +542,58 @@ async function getPlayerRSSufffix(playerID: string, level: { level: number, dark
     })
 }
 
+function getPlayerModuleSuffix(playerID: string, dark: boolean) {
+    return new Promise<string>((resolve, reject) => {
+        if (!dark) {
+            getPlayerRSModules(playerID)
+                .then(rsmods => {
+                    let suffix = ""
+                    rsmods.forEach(rsmod => {
+                        if (rsmod.type === 0) {
+                            suffix += `:${rsmod.emojiname}:`
+                        }
+                        else {
+                            suffix += `<:${rsmod.emojiname}:${rsmod.emojiID}>`
+                        }
+                    })
+                    resolve(suffix)
+                })
+                .catch(err => {
+                    reject(err)
+                })
+        }
+        else {
+            getPlayerDRSModules(playerID)
+                .then(rsmods => {
+                    resolve(`${emojis.genesis}${rsmods.genesis} ${emojis.enrich}${rsmods.enrich} ${emojis.rse}${rsmods.rse}`)
+                })
+                .catch(err => {
+                    reject(err)
+                })
+        }
+    })
+}
+
 function getPlayerRSModules(playerID: string) {
     return new Promise<RowDataPacket[]>((resolve, reject) => {
         queryDB(`SELECT rsmod.ID, rsmod.name, rsmod.emojiname, rsmod.emojiID, rsmod.description, rsmod.type FROM rsmodequip, rsmod WHERE rsmod.ID = rsmodequip.modID AND rsmodequip.userID = ${playerID}`)
             .then(modules => {
                 resolve(modules)
+            })
+            .catch(err => {
+                reject(err)
+            })
+    })
+}
+
+function getPlayerDRSModules(playerID: string) {
+    return new Promise<{ genesis: number, enrich: number, rse: number }>((resolve, reject) => {
+        getPlayerModuleData(playerID)
+            .then(modlevels => {
+                if (modlevels === null) {
+                    resolve({ genesis: 0, enrich: 0, rse: 0 })
+                }
+                else resolve({ genesis: (modlevels.genesis ?? { level: 0 }).level, enrich: (modlevels.enrich ?? { level: 0 }).level, rse: (modlevels.rsextender ?? { level: 0 }).level })
             })
             .catch(err => {
                 reject(err)
@@ -805,7 +846,7 @@ async function initAFKTimeoutCheckLoop() {
                 for (let j = 0; j < playersToKick.length; j++) {
                     queryDB(`DELETE FROM rsqueueuser WHERE playerID = ${playersToKick[j].playerID} AND level = ${playersToKick[j].level} AND dark = ${playersToKick[j].dark}`)
                         .then(() => {
-                            getCurrentQueue(playersToKick[j].level) //this is to get the length of the queue
+                            getCurrentQueue({ level: playersToKick[j].level, dark: playersToKick[j].dark }) //this is to get the length of the queue
                                 .then(currentQueue => {
                                     sendMessage(rschannels[playersToKick[j].level][getDark(playersToKick[j].dark)], `RS${playersToKick[j].level + 3} (${currentQueue.length}/${maxRSsize[getDark(playersToKick[j].dark)]}) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
                                     if (!levelsToUpdate.some(level => level.level === playersToKick[j].level && level.dark === playersToKick[j].dark)) {
