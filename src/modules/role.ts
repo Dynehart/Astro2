@@ -1,5 +1,4 @@
 import { EmbedBuilder, GuildMember, Message, Role } from "discord.js";
-import { botchannels } from "../../config/config.js";
 import { getallMembers, getmember, getrole, getSelfMember, sendEmbed, sendMessage } from "../bot.js";
 import { commandGroup, command, allArguments } from "./command.js";
 import { hasAdminPerms, hasCoordPerms, hasdefaultPerms } from "./user.js";

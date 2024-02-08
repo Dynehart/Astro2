@@ -1,5 +1,5 @@
 import { EmbedBuilder, GuildMember, Message, Role } from "discord.js"
-import { areaHP, blastHP, botchannels, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel } from "../../config/config.js"
+import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel } from "../../config/config.js"
 import { fetchChannel, fetchMember, fetchRole, getmember, sendEmbed, sendMessage } from "../bot.js"
 import { hasdefaultPerms, hasMemberPerms, hasRosterBuddiesPerms } from "./user.js"
 import { escape } from "mysql2"

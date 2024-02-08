@@ -1,5 +1,5 @@
 import { EmbedBuilder, GuildMember, Message } from "discord.js"
-import { adminRole, botchannels, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
+import { adminRole, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
 import { getallMembers, getmember, getrole, getSelfMember, sendEmbed, sendMessage } from "../bot.js"
 import { command, allArguments, commandGroup } from "./command.js"
 import { queryDB } from "./DB.js"

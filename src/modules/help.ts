@@ -1,5 +1,5 @@
 import { Message } from "discord.js"
-import { botchannels, prefix } from "../../config/config.js"
+import { prefix } from "../../config/config.js"
 import { getAllCommands, sendMessage } from "../bot.js"
 import { commandGroup, command, allArguments } from "./command.js"
 import { hasdefaultPerms } from "./user.js"
