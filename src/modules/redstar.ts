@@ -544,33 +544,33 @@ async function getPlayerRSSufffix(playerID: string, level: { level: number, dark
 
 function getPlayerModuleSuffix(playerID: string, dark: boolean) {
     return new Promise<string>((resolve, reject) => {
-        if (!dark) {
-            getPlayerRSModules(playerID)
-                .then(rsmods => {
-                    let suffix = ""
-                    rsmods.forEach(rsmod => {
-                        if (rsmod.type === 0) {
-                            suffix += `:${rsmod.emojiname}:`
-                        }
-                        else {
-                            suffix += `<:${rsmod.emojiname}:${rsmod.emojiID}>`
-                        }
-                    })
+        getPlayerRSModules(playerID)
+            .then(rsmods => {
+                let suffix = ""
+                rsmods.forEach(rsmod => {
+                    if (rsmod.type === 0) {
+                        suffix += `:${rsmod.emojiname}:`
+                    }
+                    else {
+                        suffix += `<:${rsmod.emojiname}:${rsmod.emojiID}>`
+                    }
+                })
+                if (!dark) {
                     resolve(suffix)
-                })
-                .catch(err => {
-                    reject(err)
-                })
-        }
-        else {
-            getPlayerDRSModules(playerID)
-                .then(rsmods => {
-                    resolve(`${emojis.genesis}${rsmods.genesis} ${emojis.enrich}${rsmods.enrich} ${emojis.rse}${rsmods.rse}`)
-                })
-                .catch(err => {
-                    reject(err)
-                })
-        }
+                }
+                else {
+                    getPlayerDRSModules(playerID)
+                        .then(rsmods => {
+                            resolve(`${suffix} ${emojis.genesis}${rsmods.genesis} ${emojis.enrich}${rsmods.enrich} ${emojis.rse}${rsmods.rse}`)
+                        })
+                        .catch(err => {
+                            reject(err)
+                        })
+                }
+            })
+            .catch(err => {
+                reject(err)
+            })
     })
 }
 
