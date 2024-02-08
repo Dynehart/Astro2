@@ -834,7 +834,7 @@ async function initAFKTimeoutCheckLoop() {
                 for (let j = 0; j < timedoutPlayers.length; j++) {
                     queryDB(`UPDATE rsqueueuser SET AFKwarned=1 WHERE playerID = ${timedoutPlayers[j].playerID} AND level = ${timedoutPlayers[j].level} AND dark = ${timedoutPlayers[j].dark}`)
                         .then(() => {
-                            sendMessage(rschannels[timedoutPlayers[j].level][getDark(timedoutPlayers[j].dark)], `<@${timedoutPlayers[j].playerID}>, are you still in for RS${timedoutPlayers[j].level + 3}? Type \`${prefix}in\` to reset your queue status or you will be removed from the queue in 5 minutes.`)
+                            sendMessage(rschannels[timedoutPlayers[j].level][getDark(timedoutPlayers[j].dark)], `<@${timedoutPlayers[j].playerID}>, are you still in for ${getD(timedoutPlayers[j].dark)}RS${timedoutPlayers[j].level + 3}? Type \`${prefix}in\` to reset your queue status or you will be removed from the queue in 5 minutes.`)
                         })
                         .catch(err => { })
                 }
@@ -848,7 +848,7 @@ async function initAFKTimeoutCheckLoop() {
                         .then(() => {
                             getCurrentQueue({ level: playersToKick[j].level, dark: playersToKick[j].dark }) //this is to get the length of the queue
                                 .then(currentQueue => {
-                                    sendMessage(rschannels[playersToKick[j].level][getDark(playersToKick[j].dark)], `RS${playersToKick[j].level + 3} (${currentQueue.length}/${maxRSsize[getDark(playersToKick[j].dark)]}) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
+                                    sendMessage(rschannels[playersToKick[j].level][getDark(playersToKick[j].dark)], `${getD(playersToKick[j].dark)}RS${playersToKick[j].level + 3} (${currentQueue.length}/${maxRSsize[getDark(playersToKick[j].dark)]}) <@${playersToKick[j].playerID}> left the queue because they were AFK for too long!`)
                                     if (!levelsToUpdate.some(level => level.level === playersToKick[j].level && level.dark === playersToKick[j].dark)) {
                                         levelsToUpdate.push({ level: playersToKick[j].level, dark: playersToKick[j].dark === 1 })
                                     }
