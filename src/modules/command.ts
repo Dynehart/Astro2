@@ -181,10 +181,10 @@ class command {
     readonly allaliases: string = ""
     private permissionLimit: (member: GuildMember) => boolean
     private execute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void
-    private channellimit: string[][]
+    private channellimit: string[]
     private deleteCommandMessage: boolean
     readonly hideHelp: boolean
-    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void, channellimit: string[][], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
+    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void, channellimit: string[], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
         this.name = name
         this.aliases = aliases
         this.args = args
@@ -224,7 +224,7 @@ class command {
     }
     public call(args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string) {
         if (this.permissionLimit(message.member)) {
-            if (this.channellimit.some(thischannelIDs => thischannelIDs.some(thischannelID => thischannelID === message.channel.id)) || this.channellimit.length === 0) {
+            if (this.channellimit.some(thischannelID => thischannelID === message.channel.id) || this.channellimit.length === 0) {
                 if (args.length === 0 && this.minargs !== 0) {
                     sendMessage(message.channel.id, `Usage: \`${prefix}${origin}${this.usage}\`\n\n${this.helpText}`)
                 }
@@ -316,11 +316,13 @@ const allArguments = {
     "rsmodArgument": new textArgument("module", 0),
     "memberidArgument": new textArgument("memberID", 0),
     "drslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => [`${level}`, `d${level}`])),
+    "drslevelArgument": new partofStringArgument("rslevel", 0, rslevels.flatMap(level => [`${level}`, `d${level}`])),
     "searchstringArgument": new textArgument("searchstring", 0),
     "corpArgument": new textArgument("corp", 2),
     "nicknameArgument": new textArgument("nickname", 2),
     "emojiArgument": new regexpArgument("emoji", 0, /<a?:.+:(\d+)>/),
     "messagecountArgument": new numberArgument("messagecount", 0, 1, 100),
+    "eventseasonArgument": new numberArgument("season", 1, 0, Infinity)
 }
 
 export {

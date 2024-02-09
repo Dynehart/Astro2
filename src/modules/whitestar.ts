@@ -8,18 +8,18 @@ import { getFormattedDeltaTime } from "./utils.js"
 import { command, allArguments, commandGroup } from "./command.js"
 
 function initWS(BaseCommandGroup: commandGroup) {
-    const rostercreate = new command("create", [], [allArguments.corpnameArgument, allArguments.wstypeArgument, allArguments.wssizeArgument, allArguments.membersArgument], "Creates a new roster in the specified corp with the specified type and Size and adds the specified members to it.", rostercreateExec, [[rosterbuildingchannel]], hasRosterBuddiesPerms, false, false)
-    const rosteradd = new command("add", [], [allArguments.corpnameArgument, allArguments.membersArgument], "Adds members to an existing roster in the specified corp.", rosteraddExec, [[rosterbuildingchannel]], hasRosterBuddiesPerms, false, false)
-    const rosterremove = new command("remove", [], [allArguments.corpnameArgument, allArguments.membersArgument], "Removes members from an existing roster in the specified corp.", rosterremoveExec, [[rosterbuildingchannel]], hasRosterBuddiesPerms, false, false)
-    const rosteredit = new command("edit", ["modify"], [allArguments.corpnameArgument, allArguments.wstypeArgument, allArguments.wssizeArgument], "Changes the type and size of the roster in the specified corp to the new specified values.", rostereditExec, [[rosterbuildingchannel]], hasRosterBuddiesPerms, false, false)
-    const rosterdelete = new command("delete", [], [allArguments.corpnameArgument], "Deletes the current roster for the specified corp.", rosterdeleteExec, [[rosterbuildingchannel]], hasRosterBuddiesPerms, false, false)
+    const rostercreate = new command("create", [], [allArguments.corpnameArgument, allArguments.wstypeArgument, allArguments.wssizeArgument, allArguments.membersArgument], "Creates a new roster in the specified corp with the specified type and Size and adds the specified members to it.", rostercreateExec, [rosterbuildingchannel], hasRosterBuddiesPerms, false, false)
+    const rosteradd = new command("add", [], [allArguments.corpnameArgument, allArguments.membersArgument], "Adds members to an existing roster in the specified corp.", rosteraddExec, [rosterbuildingchannel], hasRosterBuddiesPerms, false, false)
+    const rosterremove = new command("remove", [], [allArguments.corpnameArgument, allArguments.membersArgument], "Removes members from an existing roster in the specified corp.", rosterremoveExec, [rosterbuildingchannel], hasRosterBuddiesPerms, false, false)
+    const rosteredit = new command("edit", ["modify"], [allArguments.corpnameArgument, allArguments.wstypeArgument, allArguments.wssizeArgument], "Changes the type and size of the roster in the specified corp to the new specified values.", rostereditExec, [rosterbuildingchannel], hasRosterBuddiesPerms, false, false)
+    const rosterdelete = new command("delete", [], [allArguments.corpnameArgument], "Deletes the current roster for the specified corp.", rosterdeleteExec, [rosterbuildingchannel], hasRosterBuddiesPerms, false, false)
     const roster = new commandGroup("roster", ["rosters"], [], [rostercreate, rosteradd, rosterremove, rosteredit, rosterdelete], "Command group for managing the rosters.", false)
 
     const wsdestinycalc = new command("destinycalc", ["destcalc"], [allArguments.shipcountArgument, allArguments.destinylevelsArgument, allArguments.blastlevelsArgument, allArguments.arealevelsArgument], "Calculates the damage done by destinies of the specified levels to blastshields and areashields of the specified levels which protect a specified amount of ships. Individual mod levels are seperated by `,` without a whitespace.", wsdestinycalcExec, [], hasdefaultPerms, true, false)
     const wsdispatchcalc = new command("dispatchcalc", [], [allArguments.relicsArgument, allArguments.dispatchlevelArgument, allArguments.twlevelArgument], "Calculates the time a TS with dispatch of specified level will do.", wsdispatchcalcExec, [], hasdefaultPerms, true, false)
     const wspingspam = new command("pingspam", ["pingspaming", "ps"], [allArguments.memberArgument, allArguments.plaintextArgument], "When one ping isn't enough: pings the specified member 5 times with the specified text.", wspingspamExec, [], hasMemberPerms, true, true)
-    const wspoll = new command("poll", [], [], "Creates a new poll for WS signup", wspollExec, [[signupchannel]], hasRosterBuddiesPerms, true, false)
-    const wsshow = new command("show", [], [allArguments.wstypeArgument], "Lists the signups from the latest poll", wsshowExec, [[rosterbuildingchannel]], hasRosterBuddiesPerms, true, false)
+    const wspoll = new command("poll", [], [], "Creates a new poll for WS signup", wspollExec, [signupchannel], hasRosterBuddiesPerms, true, false)
+    const wsshow = new command("show", [], [allArguments.wstypeArgument], "Lists the signups from the latest poll", wsshowExec, [rosterbuildingchannel], hasRosterBuddiesPerms, true, false)
 
     const whitestar = new commandGroup("whitestar", ["ws"], [], [wsdestinycalc, wsdispatchcalc, wspingspam, wspoll, wsshow], "Command group for managing WS-related commands.", false)
 

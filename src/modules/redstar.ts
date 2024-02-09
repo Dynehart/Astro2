@@ -15,17 +15,17 @@ let lastRSrolemention: { regular: number, dark?: number }[] = [{ regular: 0 }, {
 */
 function initRS(BaseCommandGroup: commandGroup) {
     const allrschannels = rschannels.flatMap(channels => Object.values(channels))
-    const ping = new command("ping", ["pingrs", "pingqueue", "pq", "p", "mention"], [], "Pings @RSX to ask for players to join.", pingExec, [allrschannels], hasdefaultPerms, true, true)
-    const sub = new command("sub", [], [], "Pings @RSX to ask for a sub for the last started queue.", subExec, [allrschannels], hasdefaultPerms, true, true)
+    const ping = new command("ping", ["pingrs", "pingqueue", "pq", "p", "mention"], [], "Pings @RSX to ask for players to join.", pingExec, allrschannels, hasdefaultPerms, true, true)
+    const sub = new command("sub", [], [], "Pings @RSX to ask for a sub for the last started queue.", subExec, allrschannels, hasdefaultPerms, true, true)
 
-    const modon = new command("on", ["add"], [allArguments.rsmodArgument], `Adds the specified RS module to the ones displayed at the end of your name in in the RS queue.`, modonExec, [botchannels, allrschannels], hasdefaultPerms, true, false)
-    const modoff = new command("off", ["remove"], [allArguments.rsmodArgument], `Removes the specified RS module from the ones displayed at the end of your name in the RS queue.`, modoffExec, [botchannels, allrschannels], hasdefaultPerms, true, false)
-    const modview = new command("view", [], [], "Lists the RS mods you have active currently.", modviewExec, [botchannels, allrschannels], hasdefaultPerms, true, false)
-    const modlist = new command("list", ["listall"], [], "Lists all RS modules.", modlistExec, [botchannels, allrschannels], hasdefaultPerms, true, false)
+    const modon = new command("on", ["add"], [allArguments.rsmodArgument], `Adds the specified RS module to the ones displayed at the end of your name in in the RS queue.`, modonExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
+    const modoff = new command("off", ["remove"], [allArguments.rsmodArgument], `Removes the specified RS module from the ones displayed at the end of your name in the RS queue.`, modoffExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
+    const modview = new command("view", [], [], "Lists the RS mods you have active currently.", modviewExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
+    const modlist = new command("list", ["listall"], [], "Lists all RS modules.", modlistExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
     const mod = new commandGroup("module", ["mod"], [], [modon, modoff, modview, modlist], "Command group for managing RS modules.", false)
 
     const rsruninfo = new command("runinfo", [], [allArguments.runidArgument], "Displays information about the RS run with the specified ID.", rsruninfoExec, [], hasdefaultPerms, true, false)
-    const rsnotify = new command("notify", [], [], "Review and update your RS notification settings.", rsnotifyExec, [botchannels, allrschannels], hasdefaultPerms, true, false)
+    const rsnotify = new command("notify", [], [], "Review and update your RS notification settings.", rsnotifyExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
     const rsbanadd = new command("add", [], [allArguments.memberArgument, allArguments.rslevelArgument], "Bans a specified member from participation in RS queues of the specified level and higher.", rsbanaddExec, [], hasCoordPerms, false, true)
     const rsbanremove = new command("remove", ["delete", "alleviate"], [allArguments.memberArgument], "Removes all RS bans from a specified member.", rsbanremoveExec, [], hasCoordPerms, false, true)
     const rsbanlist = new command("list", ["view", "show"], [], "Lists all active RS bans", rsbanlistExec, [], hasCaptainPerms, true, false)
@@ -34,11 +34,11 @@ function initRS(BaseCommandGroup: commandGroup) {
     const redstar = new commandGroup("redstar", ["rs"], [rsban], [rsruninfo, rsnotify], "Command group for managing RS related commands.", false)
 
     const in_ = new command("in", ["i", "join"], [], "Join a RS queue.", inExec, [], hasdefaultPerms, true, true)
-    const out = new command("out", ["o", "leave"], [], "Leave a RS queue.", outExec, [allrschannels], hasdefaultPerms, true, true)
-    const start = new command("start", ["s"], [], "Start a queue you are in.", startExec, [allrschannels], hasdefaultPerms, true, true)
-    const queue = new command("queue", ["q"], [], "Lists the current RS queue.", queueExec, [allrschannels], hasdefaultPerms, true, true)
-    const guest = new command("guest", ["addguest", "ag", "g"], [], "Adds a guest to your RS queue.", guestExec, [allrschannels], hasdefaultPerms, true, true)
-    const removeguest = new command("removeguest", ["rg"], [], "Removes a guest from your RS queue.", removeguestExec, [allrschannels], hasdefaultPerms, true, true)
+    const out = new command("out", ["o", "leave"], [], "Leave a RS queue.", outExec, allrschannels, hasdefaultPerms, true, true)
+    const start = new command("start", ["s"], [], "Start a queue you are in.", startExec, allrschannels, hasdefaultPerms, true, true)
+    const queue = new command("queue", ["q"], [], "Lists the current RS queue.", queueExec, allrschannels, hasdefaultPerms, true, true)
+    const guest = new command("guest", ["addguest", "ag", "g"], [], "Adds a guest to your RS queue.", guestExec, allrschannels, hasdefaultPerms, true, true)
+    const removeguest = new command("removeguest", ["rg"], [], "Removes a guest from your RS queue.", removeguestExec, allrschannels, hasdefaultPerms, true, true)
 
     BaseCommandGroup.addsubcommandgroup(redstar)
     BaseCommandGroup.addsubcommandgroup(mod)
@@ -615,11 +615,13 @@ function getRSModules() {
 
 async function StartQueue(level: { level: number, dark: boolean }, d: number) {
     CheckPlayerInStartingQueue(level).then(() => {
-        logrun(level, d).then(() => {
-            sendRSEmbed(level, true).then(() => {
-                sendQueueStartMessage(level).then(() => {
-                    queryDB(`DELETE FROM rsqueueuser WHERE level = ${level.level} AND dark = ${boolToInt(level.dark)}`).then(() => {
-                        sendRSEmbed(level, false).catch(err => { })
+        getCurrentQueue(level).then(async currentQueue => {
+            logrun(d, level, currentQueue.map(val => { return { playerID: val.playerID, type: val.type } }), await queryDB("SELECT event FROM config")[0].event).then(() => {
+                sendRSEmbed(level, true).then(() => {
+                    sendQueueStartMessage(level).then(() => {
+                        queryDB(`DELETE FROM rsqueueuser WHERE level = ${level.level} AND dark = ${boolToInt(level.dark)}`).then(() => {
+                            sendRSEmbed(level, false).catch(err => { })
+                        }).catch(err => { })
                     }).catch(err => { })
                 }).catch(err => { })
             }).catch(err => { })
@@ -627,37 +629,31 @@ async function StartQueue(level: { level: number, dark: boolean }, d: number) {
     }).catch(err => { })
 }
 
-async function logrun(level: { level: number, dark: boolean }, d: number) {
-    return new Promise<boolean>((resolve, reject) => {
-        getCurrentQueue(level)
-            .then(async currentQueue => {
-                await queryDB(`INSERT INTO runlog(runID, level, dark) VALUES (${d}, ${level.level}, ${boolToInt(level.dark)})`)
-                const runID: { ID: number, shortID: number } = (await queryDB("SELECT MAX(runID) AS ID, MAX(shortID) AS shortID FROM runlog")).map(a => { return { ID: a.ID, shortID: a.shortID } })[0]
-                let content = `Started at: <t:${Math.floor(d / 1000)}:f>\n`
+async function logrun(d: number, level: { level: number; dark: boolean }, currentQueue: { playerID: string, type: number }[], event: number) {
+    return new Promise<{ ID: number, shortID: number }>(async (resolve, reject) => {
+        await queryDB(`INSERT INTO runlog(runID, level, dark, event) VALUES (${d}, ${level.level}, ${boolToInt(level.dark)}, ${event})`)
+        const runID: { ID: number; shortID: number } = (await queryDB("SELECT MAX(runID) AS ID, MAX(shortID) AS shortID FROM runlog")).map(a => { return { ID: a.ID, shortID: a.shortID } })[0]
+        let content = `Started at: <t:${Math.floor(d / 1000)}:f>\n`
+        let k = 0
+        currentQueue.forEach(async (playerInQueue) => {
+            const playerID = playerInQueue.playerID
+            let member = await fetchMember(playerID)
+            queryDB(`INSERT INTO playerinrun(runID, playerID, isGuest) VALUES (${runID.ID}, ${playerID}, ${playerInQueue.type})`).catch(err => { })
+            let guest = ""
+            if (playerInQueue.type === 1) guest = "'s guest"
+            content += `\n${member.displayName}${guest}`
+            k++
+            if (k === currentQueue.length) {
                 let logembed = new EmbedBuilder
+                const color = (await fetchRole(rsroles[level.level][getDark(level.dark)])).color
                 logembed.setTitle(`${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]})`)
-                let k = 0
-                currentQueue.forEach(async playerInQueue => {
-                    const playerID = playerInQueue.playerID
-                    let member = await fetchMember(playerID)
-                    queryDB(`INSERT INTO playerinrun(runID, playerID, isGuest) VALUES (${runID.ID}, ${playerID}, ${playerInQueue.type})`).catch(err => { })
-                    let guest = ""
-                    if (playerInQueue.type === 1) guest = "'s guest"
-                    content += `\n${member.displayName}${guest}`
-                    k++
-                    if (k === currentQueue.length) {
-                        const color = (await fetchRole(rsroles[level.level][getDark(level.dark)])).color
-                        logembed.setDescription(content)
-                            .setFooter({ text: `Run ID: ${runID.shortID}` }).setTimestamp()
-                            .setColor(color)
-                        sendEmbed(runlogchannel, "", logembed)
-                        resolve(true)
-                    }
-                })
-            })
-            .catch(err => {
-                reject(err)
-            })
+                    .setDescription(content)
+                    .setFooter({ text: `Run ID: ${runID.shortID}` }).setTimestamp()
+                    .setColor(color)
+                sendEmbed(runlogchannel, "", logembed)
+                resolve(runID)
+            }
+        })
     })
 }
 
@@ -803,13 +799,13 @@ async function getLastStartedQueue(level: { level: number, dark: boolean }) {
 
 async function getQueueByID(id: number) {
     //gets the queue with the specified ID.
-    return new Promise<{ "queue": { "shortID": number, "ID": number, "level": number, "dark": boolean }, "queueUsers": { "playerID": string, "isGuest": boolean }[] }>((resolve, reject) => {
-        queryDB(`SELECT shortID, runID, level, dark FROM runlog WHERE shortID = ${id} OR runID = ${id}`)
+    return new Promise<{ "queue": { "shortID": number, "ID": number, "level": number, "dark": boolean, "event": number, "logged": boolean, "verified": boolean, "points": number }, "queueUsers": { "playerID": string, "isGuest": boolean }[] }>((resolve, reject) => {
+        queryDB(`SELECT shortID, runID, level, dark, event, logged, verified, points FROM runlog WHERE shortID = ${id} OR runID = ${id}`)
             .then(queue => {
                 if (queue.length === 1) {
                     queryDB(`SELECT playerID, isGuest FROM playerinrun WHERE runID = ${queue[0].runID}`)
                         .then(queueUsers => {
-                            resolve({ "queue": { "shortID": queue[0].shortID, "ID": queue[0].runID, "level": queue[0].level, "dark": queue[0].dark === 1 }, "queueUsers": queueUsers.map(a => ({ "playerID": a.playerID, "isGuest": a.isGuest })) })
+                            resolve({ "queue": { "shortID": queue[0].shortID, "ID": queue[0].runID, "level": queue[0].level, "dark": queue[0].dark === 1, "event": queue[0].event, "logged": queue[0].logged === 1, "verified": queue[0].verified === 1, "points": queue[0].points }, "queueUsers": queueUsers.map(a => ({ "playerID": a.playerID, "isGuest": a.isGuest })) })
                         })
                         .catch(err => {
                             reject(err)
@@ -870,4 +866,6 @@ async function initAFKTimeoutCheckLoop() {
 export {
     initAFKTimeoutCheckLoop,
     initRS,
+    logrun,
+    getQueueByID
 }
