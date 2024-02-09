@@ -5,7 +5,7 @@ import { fetchChannel, fetchMember, fetchRole, sendEmbed, sendMessage } from "..
 import { getDark, getD } from "./utils.js"
 import { queryDB } from "./DB.js"
 import { allArguments, command, commandGroup } from "./command.js"
-import { hasdefaultPerms } from "./user.js"
+import { hasAdminPerms, hasdefaultPerms } from "./user.js"
 
 const verifybutton = new ButtonBuilder()
     .setCustomId('verify')
@@ -27,6 +27,8 @@ const verifiedrow = new ActionRowBuilder<MessageActionRowComponentBuilder>()
 function initevent(BaseCommandGroup: commandGroup) {
     const list = new command("list", [], [], "Lists all RS runs that haven't been logged yet during a RS Event", listExec, [rseventlogchannel], hasdefaultPerms, true, false)
     const leaderboard = new command("leaderboard", ["scoreboard", "lb", "sb", "score"], [allArguments.rslevelArgument, allArguments.eventseasonArgument], "Displays the RS event leaderboard for the specified RS level and optionally of the specified season. ", leaderboardExec, [scorecheckchannel], hasdefaultPerms, true, false)
+    const startevent  = new command("startevent", [], [], "Starts a new RS event", starteventExec, [scorekeeperchannel], hasAdminPerms, false, true)
+    const stopevent  = new command("stopevent", [], [], "Stops the ongoing RS event", stopeventExec, [scorekeeperchannel], hasAdminPerms, false, true)
 
     BaseCommandGroup.addsubcommand(list)
     BaseCommandGroup.addsubcommand(leaderboard)
@@ -220,6 +222,29 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
                     })
                 }
             }).catch(err => { })
+    }
+    else {
+        sendMessage(message.channel.id, "This command is only available during a Red Star Event")
+    }
+}
+
+async function starteventExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const event = await queryDB("SELECT event FROM config")[0].event
+    if (event === 0) {
+        const lastevent = await queryDB("SELECT lastevent FROM config")[0].lastevent
+        queryDB(`UPDATE config SET event = ${lastevent + 1}`)
+        sendMessage(message.channel.id, `Successfully started Season ${lastevent + 1} of the Red Star Event. Happy Hunting!`)
+    }
+    else {
+        sendMessage(message.channel.id, "This command is not available during a Red Star Event")
+    }
+}
+
+async function stopeventExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const event = await queryDB("SELECT event FROM config")[0].event
+    if (event !== 0) {
+        queryDB(`UPDATE config SET event = 0, lastevent = ${event}`)
+        sendMessage(message.channel.id, `Successfully stopped Season ${event} of the Red Star Event. See you next time!`)
     }
     else {
         sendMessage(message.channel.id, "This command is only available during a Red Star Event")
