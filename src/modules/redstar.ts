@@ -469,6 +469,7 @@ async function sendRSEmbed(level: { level: number, dark: boolean }, starting: bo
             let header = "Users in"
             if (starting) {
                 header = "Starting"
+                RSembed.setFooter({ text: `ID: ${((await getLastStartedQueue(level)).queue.shortID)}` })
             }
             RSembed.setTitle(`${header} ${getD(level.dark)}RS${level.level + 3} (${currentQueue.length}/${maxRSsize[getDark(level.dark)]})`)
             let k = 0
@@ -616,7 +617,7 @@ function getRSModules() {
 async function StartQueue(level: { level: number, dark: boolean }, d: number) {
     CheckPlayerInStartingQueue(level).then(() => {
         getCurrentQueue(level).then(async currentQueue => {
-            logrun(d, level, currentQueue.map(val => { return { playerID: val.playerID, type: val.type } }), await queryDB("SELECT event FROM config")[0].event).then(() => {
+            logrun(d, level, currentQueue.map(val => { return { playerID: val.playerID, type: val.type } }), (await queryDB("SELECT event FROM config"))[0].event).then(() => {
                 sendRSEmbed(level, true).then(() => {
                     sendQueueStartMessage(level).then(() => {
                         queryDB(`DELETE FROM rsqueueuser WHERE level = ${level.level} AND dark = ${boolToInt(level.dark)}`).then(() => {

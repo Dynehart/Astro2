@@ -11,6 +11,11 @@ const verifybutton = new ButtonBuilder()
     .setCustomId('verify')
     .setLabel('Verify')
     .setStyle(ButtonStyle.Success)
+const disabledVerifybutton = new ButtonBuilder()
+    .setCustomId('verify')
+    .setLabel('Verify')
+    .setStyle(ButtonStyle.Success)
+    .setDisabled(true)
 const rejectbutton = new ButtonBuilder()
     .setCustomId('reject')
     .setLabel('Reject')
@@ -22,16 +27,18 @@ const voidbutton = new ButtonBuilder()
 const loggedrow = new ActionRowBuilder<MessageActionRowComponentBuilder>()
     .addComponents(verifybutton, rejectbutton, voidbutton);
 const verifiedrow = new ActionRowBuilder<MessageActionRowComponentBuilder>()
-    .addComponents(verifybutton.setDisabled(true), rejectbutton, voidbutton);
+    .addComponents(disabledVerifybutton, rejectbutton, voidbutton);
 
 function initevent(BaseCommandGroup: commandGroup) {
     const list = new command("list", [], [], "Lists all RS runs that haven't been logged yet during a RS Event", listExec, [rseventlogchannel], hasdefaultPerms, true, false)
     const leaderboard = new command("leaderboard", ["scoreboard", "lb", "sb", "score"], [allArguments.rslevelArgument, allArguments.eventseasonArgument], "Displays the RS event leaderboard for the specified RS level and optionally of the specified season. ", leaderboardExec, [scorecheckchannel], hasdefaultPerms, true, false)
-    const startevent  = new command("startevent", [], [], "Starts a new RS event", starteventExec, [scorekeeperchannel], hasAdminPerms, false, true)
-    const stopevent  = new command("stopevent", [], [], "Stops the ongoing RS event", stopeventExec, [scorekeeperchannel], hasAdminPerms, false, true)
+    const startevent = new command("startevent", [], [], "Starts a new RS event", starteventExec, [scorekeeperchannel], hasAdminPerms, false, true)
+    const stopevent = new command("stopevent", [], [], "Stops the ongoing RS event", stopeventExec, [scorekeeperchannel], hasAdminPerms, false, true)
 
     BaseCommandGroup.addsubcommand(list)
     BaseCommandGroup.addsubcommand(leaderboard)
+    BaseCommandGroup.addsubcommand(startevent)
+    BaseCommandGroup.addsubcommand(stopevent)
 
     return BaseCommandGroup
 }
@@ -41,8 +48,8 @@ function initeventCommands() {
         .setName("log")
         .setDescription("Logs the score of a run from the RS queue")
         .addIntegerOption(option =>
-            option.setName("runID")
-                .setDescription(`The ID of the Run. Accessible in the RS channel, <#${runlogchannel}> or in your DMs if they are enabled`)
+            option.setName("runid")
+                .setDescription(`The ID of the Run. Accessible in the RS channel and <#${runlogchannel}>`)
                 .setRequired(true)
                 .setMinValue(0)
         )
@@ -54,7 +61,7 @@ function initeventCommands() {
         )
         .addAttachmentOption(option =>
             option.setName("screenshot")
-                .setDescription("Attach the screenshot of the ingame RS completion message here. It must show the name of the corp it was run in")
+                .setDescription("Screenshot of the ingame RS completion message. It must show the name of the corp it was run in")
                 .setRequired(true)
         )
         .setDMPermission(false)
@@ -85,7 +92,7 @@ function initeventCommands() {
         )
         .addAttachmentOption(option =>
             option.setName("screenshot")
-                .setDescription("Attach the screenshot of the ingame RS completion message here. It must show the name of the corp it was run in")
+                .setDescription("Screenshot of the ingame RS completion message. It must show the name of the corp it was run in")
                 .setRequired(true)
         )
         .setDMPermission(false)
@@ -116,28 +123,32 @@ function initeventCommands() {
         )
         .addAttachmentOption(option =>
             option.setName("screenshot")
-                .setDescription("Attach the screenshot of the ingame RS completion message here. It must show the name of the corp it was run in")
+                .setDescription("Screenshot of the ingame RS completion message. It must show the name of the corp it was run in")
                 .setRequired(true)
         )
         .addUserOption(option =>
-            option.setName("Player 1")
+            option.setName("player1")
+                .setDescription("The first player in the Run")
                 .setRequired(true)
         )
         .addUserOption(option =>
-            option.setName("Player 2")
+            option.setName("player2")
+                .setDescription("The second player in the Run")
         )
         .addUserOption(option =>
-            option.setName("Player 3")
+            option.setName("player3")
+                .setDescription("The third player in the Run")
         )
         .addUserOption(option =>
-            option.setName("Player 4")
+            option.setName("player4")
+                .setDescription("The fourth player in the Run")
         )
         .setDMPermission(false)
     return ([log, solo, run])
 }
 
 async function listExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const event = await queryDB("SELECT event FROM config")[0].event
+    const event = (await queryDB("SELECT event FROM config"))[0].event
     if (event !== 0) {
         queryDB(`SELECT runID FROM runlog WHERE event = ${event} AND logged = 0`)
             .then(runs => {
@@ -146,7 +157,7 @@ async function listExec(args: { lowercase: string, original: string }[], message
                 if (runs.length !== 0) {
                     runs.forEach(async run => {
                         const queue = await getQueueByID(run.runID)
-                        let content = `Level: ${queue.queue.level}\nPlayers:`
+                        let content = `Level: ${queue.queue.level + 3}\nPlayers:`
                         let j = 0
                         queue.queueUsers.forEach(async user => {
                             const member = await fetchMember(user.playerID)
@@ -178,23 +189,24 @@ async function listExec(args: { lowercase: string, original: string }[], message
 }
 
 async function leaderboardExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const event = await queryDB("SELECT event FROM config")[0].event
+    const event = (await queryDB("SELECT event FROM config"))[0].event
     if (event !== 0) {
         let requestedEvent = event
         if (args.length === 2) requestedEvent = parseInt(args[1].lowercase)
-        const level = parseInt(args[0].lowercase)
+        const level = parseInt(args[0].lowercase) - 3
         queryDB(`SELECT playerinrun.playerID, SUM(runlog.points / p1.playercount) AS points FROM playerinrun JOIN runlog ON playerinrun.runID = runlog.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON playerinrun.runID = p1.runID WHERE playerinrun.isGuest = 0 AND runlog.event = ${requestedEvent} AND runlog.verified = 1 AND runlog.level = ${level} GROUP BY playerinrun.playerID ORDER BY points DESC`)
             .then(players => {
                 if (players.length === 0) {
-                    sendMessage(message.channel.id, `No Data found for RS${level} In Season ${requestedEvent} of the RS Event`)
+                    sendMessage(message.channel.id, `No Data found for RS${level + 3} In Season ${requestedEvent} of the RS Event`)
                 }
                 else {
                     let contents: string[] = []
-                    let content = "```   Points  | Player"
+                    let content = "```    Points  | Player"
                     let k = 0
                     players.forEach(async player => {
                         const member = await fetchMember(player.playerID)
-                        const toAdd = `\n${k}.${" ".repeat(3 - k.toString().length)}${player.points}${" ".repeat(8 - player.points.toString().length)}| ${member.displayName}`
+                        const points = parseFloat(player.points).toFixed(0)
+                        const toAdd = `\n${k + 1}.${" ".repeat(3 - k.toString().length)}${points}${" ".repeat(8 - points.length)}| ${member.displayName}`
                         if ((content + toAdd).length > 4090) {
                             contents.push(content += "```")
                             content = `\`\`\`    Points  | Player${toAdd}`
@@ -228,10 +240,10 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
     }
 }
 
-async function starteventExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const event = await queryDB("SELECT event FROM config")[0].event
+async function starteventExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const event = (await queryDB("SELECT event FROM config"))[0].event
     if (event === 0) {
-        const lastevent = await queryDB("SELECT lastevent FROM config")[0].lastevent
+        const lastevent = (await queryDB("SELECT lastevent FROM config"))[0].lastevent
         queryDB(`UPDATE config SET event = ${lastevent + 1}`)
         sendMessage(message.channel.id, `Successfully started Season ${lastevent + 1} of the Red Star Event. Happy Hunting!`)
     }
@@ -240,8 +252,8 @@ async function starteventExec( args: { lowercase: string, original: string }[], 
     }
 }
 
-async function stopeventExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const event = await queryDB("SELECT event FROM config")[0].event
+async function stopeventExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const event = (await queryDB("SELECT event FROM config"))[0].event
     if (event !== 0) {
         queryDB(`UPDATE config SET event = 0, lastevent = ${event}`)
         sendMessage(message.channel.id, `Successfully stopped Season ${event} of the Red Star Event. See you next time!`)
@@ -252,7 +264,7 @@ async function stopeventExec( args: { lowercase: string, original: string }[], m
 }
 
 function handleLog(interaction: ChatInputCommandInteraction) {
-    const runID = interaction.options.getInteger('runID')
+    const runID = interaction.options.getInteger('runid')
     const points = interaction.options.getInteger('points')
     const screenshot = interaction.options.getAttachment('screenshot')
 
@@ -261,14 +273,14 @@ function handleLog(interaction: ChatInputCommandInteraction) {
             if (queue === null) {
                 interaction.reply({ content: 'Invalid runID. Please correct your input', ephemeral: true })
             }
-            else if (queue.queue.event !== await queryDB("SELECT event FROM config")[0].event) {
+            else if (queue.queue.event !== (await queryDB("SELECT event FROM config"))[0].event) {
                 interaction.reply({ content: 'This RS was not run during this RS Event. Please correct your input', ephemeral: true })
             }
             else if (queue.queue.logged) {
                 interaction.reply({ content: 'This run has already been logged. Please correct your input', ephemeral: true })
             }
             else {
-                addScoreToRun(runID, points, screenshot, { level: queue.queue.level, dark: queue.queue.dark })
+                addScoreToRun(queue.queue.ID, points, screenshot, { level: queue.queue.level, dark: queue.queue.dark })
                 interaction.reply({ content: 'Successfully logged this RS' })
             }
         }).catch(err => { })
@@ -283,7 +295,7 @@ async function handleSolo(interaction: ChatInputCommandInteraction) {
         interaction.reply({ content: 'DRS only supports runs at DRS7+. Please correct your input', ephemeral: true })
     }
     else {
-        logrun(Date.now(), { level: level, dark: dark }, [{ playerID: interaction.user.id, type: 0 }], await queryDB("SELECT event FROM config")[0].event)
+        logrun(Date.now(), { level: level, dark: dark }, [{ playerID: interaction.user.id, type: 0 }], (await queryDB("SELECT event FROM config"))[0].event)
             .then(runID => {
                 addScoreToRun(runID.ID, points, screenshot, { level: level, dark: dark })
                 interaction.reply({ content: 'Successfully logged this RS' })
@@ -298,7 +310,7 @@ async function handleRun(interaction: ChatInputCommandInteraction) {
     const screenshot = interaction.options.getAttachment('screenshot')
     let users: User[] = []
     for (let i = 1; i <= 4; i++) {
-        const user = interaction.options.getUser(`Player ${i}`) ?? null
+        const user = interaction.options.getUser(`player${i}`) ?? null
         if (user !== null && !users.some(u => u.id === user.id)) {
             users.push(user)
         }
@@ -308,7 +320,7 @@ async function handleRun(interaction: ChatInputCommandInteraction) {
         interaction.reply({ content: 'DRS only support up to 3 players at DRS7+. Please correct your input', ephemeral: true })
     }
     else {
-        logrun(Date.now(), { level: level, dark: dark }, users.map(user => { return { playerID: user.id, type: 0 } }), await queryDB("SELECT event FROM config")[0].event)
+        logrun(Date.now(), { level: level, dark: dark }, users.map(user => { return { playerID: user.id, type: 0 } }), (await queryDB("SELECT event FROM config"))[0].event)
             .then(runID => {
                 addScoreToRun(runID.ID, points, screenshot, { level: level, dark: dark })
                 interaction.reply({ content: 'Successfully logged this RS' })
@@ -355,7 +367,7 @@ function addScoreToRun(runID: number, points: number, screenshot: Attachment, le
                     let verificationEmbed = new EmbedBuilder()
                         .setTitle(`${getD(level.dark)}RS${level.level + 3} (${queue.queueUsers.length}/${maxRSsize[getDark(level.dark)]})`)
                         .setDescription(content)
-                        .setTimestamp(Math.floor(queue.queue.ID / 1000))
+                        .setTimestamp(queue.queue.ID)
                         .setColor(color)
                     const channel = await fetchChannel(scorekeeperchannel)
                     channel.send({ embeds: [verificationEmbed], components: [loggedrow], files: [screenshot] })
