@@ -1,8 +1,8 @@
-import { Client, GatewayIntentBits, EmbedBuilder, TextChannel, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel } from 'discord.js';
-import { GreeterRole, SFAcorp, auditlogchannel, logchannel, prefix, representtiverole, welcomechannel } from '../config/config.js';
+import { Client, GatewayIntentBits, EmbedBuilder, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel, SlashCommandBuilder, Routes, REST } from 'discord.js';
+import { GreeterRole, SFAcorp, adminRole, auditlogchannel, logchannel, prefix, representtiverole, rseventlogchannel, scorekeeperrole, welcomechannel } from '../config/config.js';
 import { autoresponsecheck } from './modules/autoresponse.js';
 import { commandGroup } from './modules/command.js';
-import { initDB } from "./modules/DB.js"
+import { initDB, queryDB } from "./modules/DB.js"
 import { initHelp } from './modules/help.js';
 import { initAFKTimeoutCheckLoop, initRS } from './modules/redstar.js';
 import { initstats } from './modules/stats.js';
@@ -11,6 +11,7 @@ import { initUser } from './modules/user.js';
 import { initWS } from './modules/whitestar.js';
 import { initmisc } from './modules/misc.js';
 import { config } from 'dotenv';
+import { handleLog, handleReject, handleRun, handleSolo, handleVerify, handleVoid, initevent, initeventCommands } from './modules/event.js';
 
 let SFA_Guild: Guild;
 let selfMember: GuildMember;
@@ -27,8 +28,11 @@ const token = process.env.BOT_TOKEN
 
 bot.login(token);
 
+const rest = new REST().setToken(process.env.BOT_TOKEN);
+
 bot.once('ready', () => {
     console.log("online!")
+
     initDB()
     BaseCommandGroup = initRS(BaseCommandGroup)
     BaseCommandGroup = initWS(BaseCommandGroup)
@@ -37,6 +41,9 @@ bot.once('ready', () => {
     BaseCommandGroup = initstats(BaseCommandGroup)
     BaseCommandGroup = initHelp(BaseCommandGroup)
     BaseCommandGroup = initmisc(BaseCommandGroup)
+    BaseCommandGroup = initevent(BaseCommandGroup)
+    const commands = initeventCommands()
+    refreshCommands(commands)
     initAFKTimeoutCheckLoop()
     bot.guilds.fetch(SFAcorp)
         .then(guild => {
@@ -132,6 +139,51 @@ bot.on("messageCreate", (message) => {
             BaseCommandGroup.call(commandName.slice(prefix.length), args, message, d, "", true)
         }
     }
+})
+bot.on("interactionCreate", interaction => {
+    queryDB("SELECT event FROM config")
+        .then(async event => {
+            if (event[0].event !== 0) {
+                if (interaction.isButton()) {
+                    const member = await fetchMember(interaction.user.id)
+                    if (member.roles.cache.some(role => role.id === scorekeeperrole || role.id === adminRole)) {
+                        interaction.deferReply()
+                        if (interaction.customId === 'verify') {
+                            handleVerify(interaction)
+                        }
+                        else if (interaction.customId === 'reject') {
+                            handleReject(interaction)
+                        }
+                        else if (interaction.customId === 'void') {
+                            handleVoid(interaction)
+                        }
+                    }
+                    else {
+                        interaction.reply({ content: 'You do not have the necessary permission to use this command', ephemeral: true })
+                    }
+                }
+                else if (interaction.isChatInputCommand()) {
+                    if (interaction.channel.id === rseventlogchannel) {
+                        interaction.deferReply()
+                        if (interaction.commandName === 'log') {
+                            handleLog(interaction)
+                        }
+                        else if (interaction.commandName === 'solo') {
+                            handleSolo(interaction)
+                        }
+                        else if (interaction.commandName === 'run') {
+                            handleRun(interaction)
+                        }
+                    }
+                    else {
+                        interaction.reply({ content: `This is not the correct channel for this command. Use <#${rseventlogchannel}>`, ephemeral: true })
+                    }
+                }
+            }
+            else if (interaction.isRepliable()) {
+                interaction.reply({ content: 'There is no ongoing RS Event at the moment, all related commands have been disabled.', ephemeral: true })
+            }
+        })
 })
 
 async function sendMessage(channelID: string, content: string) {
@@ -406,6 +458,17 @@ async function playerInputChoice(channelID: string, userID: string, choiceList: 
             reject()
         }
     })
+}
+
+async function refreshCommands(commands: SlashCommandBuilder[]) {
+    console.log(`Started refreshing ${commands.length} application (/) commands.`);
+    // The put method is used to fully refresh all commands in the guild with the current set
+    const data = await rest.put(
+        Routes.applicationCommands(bot.user.id),
+        { body: commands },
+    );
+    //@ts-ignore
+    console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 }
 
 function getAllCommands() {
