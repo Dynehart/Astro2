@@ -806,7 +806,7 @@ async function getQueueByID(id: number) {
                 if (queue.length === 1) {
                     queryDB(`SELECT playerID, isGuest FROM playerinrun WHERE runID = ${queue[0].runID}`)
                         .then(queueUsers => {
-                            resolve({ "queue": { "shortID": queue[0].shortID, "ID": queue[0].runID, "level": queue[0].level, "dark": queue[0].dark === 1, "event": queue[0].event, "logged": queue[0].logged === 1, "verified": queue[0].verified === 1, "points": queue[0].points }, "queueUsers": queueUsers.map(a => ({ "playerID": a.playerID, "isGuest": a.isGuest })) })
+                            resolve({ "queue": { "shortID": queue[0].shortID, "ID": parseInt(queue[0].runID), "level": parseInt(queue[0].level), "dark": queue[0].dark === 1, "event": queue[0].event, "logged": queue[0].logged === 1, "verified": queue[0].verified === 1, "points": queue[0].points }, "queueUsers": queueUsers.map(a => ({ "playerID": a.playerID, "isGuest": a.isGuest })) })
                         })
                         .catch(err => {
                             reject(err)
