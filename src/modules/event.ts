@@ -271,17 +271,17 @@ function handleLog(interaction: ChatInputCommandInteraction) {
     getQueueByID(runID)
         .then(async queue => {
             if (queue === null) {
-                interaction.reply({ content: 'Invalid runID. Please correct your input', ephemeral: true })
+                interaction.followUp({ content: 'Invalid runID. Please correct your input', ephemeral: true })
             }
             else if (queue.queue.event !== (await queryDB("SELECT event FROM config"))[0].event) {
-                interaction.reply({ content: 'This RS was not run during this RS Event. Please correct your input', ephemeral: true })
+                interaction.followUp({ content: 'This RS was not run during this RS Event. Please correct your input', ephemeral: true })
             }
             else if (queue.queue.logged) {
-                interaction.reply({ content: 'This run has already been logged. Please correct your input', ephemeral: true })
+                interaction.followUp({ content: 'This run has already been logged. Please correct your input', ephemeral: true })
             }
             else {
                 addScoreToRun(queue.queue.ID, points, screenshot, { level: queue.queue.level, dark: queue.queue.dark })
-                interaction.reply({ content: 'Successfully logged this RS' })
+                interaction.followUp({ content: 'Successfully logged this RS' })
             }
         }).catch(err => { })
 }
@@ -292,13 +292,13 @@ async function handleSolo(interaction: ChatInputCommandInteraction) {
     const points = interaction.options.getInteger('points')
     const screenshot = interaction.options.getAttachment('screenshot')
     if (dark && level < 4) {
-        interaction.reply({ content: 'DRS only supports runs at DRS7+. Please correct your input', ephemeral: true })
+        interaction.followUp({ content: 'DRS only supports runs at DRS7+. Please correct your input', ephemeral: true })
     }
     else {
         logrun(Date.now(), { level: level, dark: dark }, [{ playerID: interaction.user.id, type: 0 }], (await queryDB("SELECT event FROM config"))[0].event)
             .then(runID => {
                 addScoreToRun(runID.ID, points, screenshot, { level: level, dark: dark })
-                interaction.reply({ content: 'Successfully logged this RS' })
+                interaction.followUp({ content: 'Successfully logged this RS' })
             }).catch(err => { })
     }
 }
@@ -317,13 +317,13 @@ async function handleRun(interaction: ChatInputCommandInteraction) {
     }
 
     if (dark && (users.length > 3 || level < 4)) {
-        interaction.reply({ content: 'DRS only support up to 3 players at DRS7+. Please correct your input', ephemeral: true })
+        interaction.followUp({ content: 'DRS only support up to 3 players at DRS7+. Please correct your input', ephemeral: true })
     }
     else {
         logrun(Date.now(), { level: level, dark: dark }, users.map(user => { return { playerID: user.id, type: 0 } }), (await queryDB("SELECT event FROM config"))[0].event)
             .then(runID => {
                 addScoreToRun(runID.ID, points, screenshot, { level: level, dark: dark })
-                interaction.reply({ content: 'Successfully logged this RS' })
+                interaction.followUp({ content: 'Successfully logged this RS' })
             }).catch(err => { })
     }
 }
@@ -337,19 +337,19 @@ async function handleVerify(interaction: ButtonInteraction) {
         .setTimestamp(parseInt(oldembed.timestamp))
         .setColor(oldembed.color)
     interaction.message.edit({ embeds: [verificationEmbed], components: [verifiedrow] })
-    interaction.reply({ content: 'Successfully verified this RS', ephemeral: true })
+    interaction.followUp({ content: 'Successfully verified this RS', ephemeral: true })
 }
 
 function handleReject(interaction: ButtonInteraction) {
     queryDB(`UPDATE runlog SET verified = 0, logged = 0, points = 0, verificationmessage = NULL WHERE verificationmessage = ${interaction.message.id}`)
     interaction.message.delete()
-    interaction.reply({ content: 'Successfully rejected the score of this RS', ephemeral: true })
+    interaction.followUp({ content: 'Successfully rejected the score of this RS', ephemeral: true })
 }
 
 function handleVoid(interaction: ButtonInteraction) {
     queryDB(`DELETE FROM runlog WHERE verificationmessage = ${interaction.message.id}`)
     interaction.message.delete()
-    interaction.reply({ content: 'Successfully voided this RS', ephemeral: true })
+    interaction.followUp({ content: 'Successfully voided this RS', ephemeral: true })
 }
 
 function addScoreToRun(runID: number, points: number, screenshot: Attachment, level: { level: number; dark: boolean }) {
