@@ -147,7 +147,7 @@ bot.on("interactionCreate", interaction => {
                 if (interaction.isButton()) {
                     const member = await fetchMember(interaction.user.id)
                     if (member.roles.cache.some(role => role.id === scorekeeperrole || role.id === adminRole)) {
-                        interaction.deferReply()
+                        await interaction.deferReply()
                         if (interaction.customId === 'verify') {
                             handleVerify(interaction)
                         }
@@ -164,7 +164,7 @@ bot.on("interactionCreate", interaction => {
                 }
                 else if (interaction.isChatInputCommand()) {
                     if (interaction.channel.id === rseventlogchannel) {
-                        interaction.deferReply({ ephemeral: true })
+                        await interaction.deferReply({ ephemeral: true })
                         if (interaction.commandName === 'log') {
                             handleLog(interaction)
                         }
