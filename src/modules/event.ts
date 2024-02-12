@@ -220,7 +220,7 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
                             for (let i = 0; i < contents.length; i++) {
                                 let leaderboardembed = new EmbedBuilder()
                                 if (i === 0) {
-                                    leaderboardembed.setTitle(`The top runners of RS${level} are:`)
+                                    leaderboardembed.setTitle(`The top runners of RS${level + 3} are:`)
                                 }
                                 else {
                                     leaderboardembed.setTitle(`Continued:`)
