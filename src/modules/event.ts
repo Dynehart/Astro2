@@ -336,7 +336,7 @@ async function handleVerify(interaction: ButtonInteraction) {
         .setDescription(oldembed.description)
         .setTimestamp(parseInt(oldembed.timestamp))
         .setColor(oldembed.color)
-    interaction.message.edit({ embeds: [verificationEmbed], components: [verifiedrow], files: [] })
+    interaction.message.edit({ embeds: [verificationEmbed], components: [verifiedrow] })
     interaction.reply({ content: 'Successfully verified this RS', ephemeral: true })
 }
 
