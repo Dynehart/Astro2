@@ -206,7 +206,7 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
                     players.forEach(async player => {
                         const member = await fetchMember(player.playerID)
                         const points = parseFloat(player.points).toFixed(0)
-                        const toAdd = `\n${k + 1}.${" ".repeat(3 - k.toString().length)}${points}${" ".repeat(8 - points.length)}| ${member.displayName}`
+                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${points}${" ".repeat(8 - points.length)}| ${member.displayName}`
                         if ((content + toAdd).length > 4090) {
                             contents.push(content += "```")
                             content = `\`\`\`    Points  | Player${toAdd}`
