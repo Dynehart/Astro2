@@ -311,6 +311,7 @@ const allArguments = {
     "rolesArgument": new textArgument("roles", 2),
     "optmemberArgument": new textArgument("member", 1),
     "rslevelArgument": new specificNumberArgument("rslevel", 0, rslevels),
+    "rslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => `${level}`)),
     "pastdaysArgument": new numberArgument("pastDays", 0, 0, Infinity),
     "commandArgument": new textArgument("command(s)", 3),
     "rsmodArgument": new textArgument("module", 0),

@@ -31,7 +31,7 @@ const verifiedrow = new ActionRowBuilder<MessageActionRowComponentBuilder>()
 
 function initevent(BaseCommandGroup: commandGroup) {
     const list = new command("list", [], [], "Lists all RS runs that haven't been logged yet during a RS Event", listExec, [rseventlogchannel], hasdefaultPerms, true, false)
-    const leaderboard = new command("leaderboard", ["scoreboard", "lb", "sb", "score"], [allArguments.rslevelArgument, allArguments.eventseasonArgument], "Displays the RS event leaderboard for the specified RS level and optionally of the specified season. ", leaderboardExec, [scorecheckchannel], hasdefaultPerms, true, false)
+    const leaderboard = new command("leaderboard", ["scoreboard", "lb", "sb", "score"], [allArguments.rslevelor0Argument, allArguments.eventseasonArgument], "Displays the RS event leaderboard for the specified RS level and optionally of the specified season. ", leaderboardExec, [scorecheckchannel], hasdefaultPerms, true, false)
     const startevent = new command("startevent", [], [], "Starts a new RS event", starteventExec, [scorekeeperchannel], hasAdminPerms, false, true)
     const stopevent = new command("stopevent", [], [], "Stops the ongoing RS event", stopeventExec, [scorekeeperchannel], hasAdminPerms, false, true)
 
@@ -194,22 +194,24 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
         let requestedEvent = event
         if (args.length === 2) requestedEvent = parseInt(args[1].lowercase)
         const level = parseInt(args[0].lowercase) - 3
-        queryDB(`SELECT playerinrun.playerID, SUM(runlog.points / p1.playercount) AS points FROM playerinrun JOIN runlog ON playerinrun.runID = runlog.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON playerinrun.runID = p1.runID WHERE playerinrun.isGuest = 0 AND runlog.event = ${requestedEvent} AND runlog.verified = 1 AND runlog.level = ${level} GROUP BY playerinrun.playerID ORDER BY points DESC`)
+        let levelcheck = `AND runlog.level = ${level} `
+        if (level === -3) levelcheck = ""
+        queryDB(`SELECT playerinrun.playerID, SUM(runlog.points / p1.playercount) AS points, COUNT(playerinrun.playerID) AS runcount FROM playerinrun JOIN runlog ON playerinrun.runID = runlog.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON playerinrun.runID = p1.runID WHERE playerinrun.isGuest = 0 AND runlog.event = ${requestedEvent} AND runlog.verified = 1 ${levelcheck}GROUP BY playerinrun.playerID ORDER BY points DESC`)
             .then(players => {
                 if (players.length === 0) {
                     sendMessage(message.channel.id, `No Data found for RS${level + 3} In Season ${requestedEvent} of the RS Event`)
                 }
                 else {
                     let contents: string[] = []
-                    let content = "```    Points  | Player"
+                    let content = "```    Points  | Runs | Player"
                     let k = 0
                     players.forEach(async player => {
                         const member = await fetchMember(player.playerID)
                         const points = parseFloat(player.points).toFixed(0)
-                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${points}${" ".repeat(8 - points.length)}| ${member.displayName}`
+                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${points}${" ".repeat(8 - points.length)}| ${player.runcount}${" ".repeat(4 - player.runcount.toString().length)} | ${member.displayName}`
                         if ((content + toAdd).length > 4090) {
                             contents.push(content += "```")
-                            content = `\`\`\`    Points  | Player${toAdd}`
+                            content = `\`\`\`    Points  | Runs | Player${toAdd}`
                         }
                         else {
                             content += toAdd
@@ -220,7 +222,8 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
                             for (let i = 0; i < contents.length; i++) {
                                 let leaderboardembed = new EmbedBuilder()
                                 if (i === 0) {
-                                    leaderboardembed.setTitle(`The top runners of RS${level + 3} are:`)
+                                    if (level === -3) leaderboardembed.setTitle(`The top runners are:`)
+                                    else leaderboardembed.setTitle(`The top runners of RS${level + 3} are:`)
                                 }
                                 else {
                                     leaderboardembed.setTitle(`Continued:`)
