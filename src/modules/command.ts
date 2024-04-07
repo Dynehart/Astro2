@@ -156,12 +156,12 @@ class commandGroup {
         })
         this.subcommandgroups.forEach(subcommandgroup => {
             if (subcommandgroup.name === commandName || subcommandgroup.aliases.some(alias => alias == commandName)) {
-                subcommandgroup.call((args[0] ?? {lowercase: ""}).lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+                subcommandgroup.call((args[0] ?? {lowercase: null}).lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
                 validCommand = true
             }
         })
         if (!validCommand && !initial) {
-            if (commandName === undefined) {
+            if (commandName === null) {
                 sendMessage(message.channel.id, `Usage: \`${prefix}${origin}${this.name}\`\n\n${this.helpText}`)
             }
             else {
