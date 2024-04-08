@@ -156,7 +156,8 @@ class commandGroup {
         })
         this.subcommandgroups.forEach(subcommandgroup => {
             if (subcommandgroup.name === commandName || subcommandgroup.aliases.some(alias => alias == commandName)) {
-                subcommandgroup.call((args[0] ?? {lowercase: null}).lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+                if(args.length !== 0) subcommandgroup.call(args[0].lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+else subcommandgroup.call(null, [], message, d, `${origin}${this.name}${space}`, false)
                 validCommand = true
             }
         })
