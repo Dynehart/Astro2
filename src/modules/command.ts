@@ -257,7 +257,7 @@ class command {
                         else {
                             argument = this.args[args.length - 1].name
                         }
-                        sendMessage(message.channel.id, `Validation error on argument ${k}. Value \`${args[k - 1]}\` is not accepted for argument \`<${argument}>\`. For help on this command, use \`${prefix}help ${origin}${this.name}\``)
+                        sendMessage(message.channel.id, `Validation error on argument ${k}. Value \`${args[k - 1].original}\` is not accepted for argument \`<${argument}>\`. For help on this command, use \`${prefix}help ${origin}${this.name}\``)
                     }
                 }
                 else {
