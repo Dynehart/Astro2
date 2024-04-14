@@ -194,24 +194,29 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
         let requestedEvent = event
         if (args.length === 2) requestedEvent = parseInt(args[1].lowercase)
         const level = parseInt(args[0].lowercase) - 3
-        let levelcheck = `AND runlog.level = ${level} `
+        let levelcheck = `AND maxlevels.maxlevel = ${level} `
         if (level === -3) levelcheck = ""
-        queryDB(`SELECT playerinrun.playerID, SUM(runlog.points / p1.playercount) AS points, COUNT(playerinrun.playerID) AS runcount FROM playerinrun JOIN runlog ON playerinrun.runID = runlog.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON playerinrun.runID = p1.runID WHERE playerinrun.isGuest = 0 AND runlog.event = ${requestedEvent} AND runlog.verified = 1 ${levelcheck}GROUP BY playerinrun.playerID ORDER BY points DESC`)
+        queryDB(`SELECT playerinrun.playerID, SUM(runlog.points / p1.playercount) AS points, COUNT(playerinrun.playerID) AS runcount, maxlevels.maxlevel FROM playerinrun JOIN runlog ON playerinrun.runID = runlog.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON playerinrun.runID = p1.runID JOIN (SELECT playerID, MAX(runlog.level) AS maxlevel FROM playerinrun JOIN runlog ON playerinrun.runID = runlog.runID WHERE playerinrun.isGuest = 1 GROUP BY playerID) maxlevels ON playerinrun.playerID = maxlevels.playerID WHERE playerinrun.isGuest = 0 AND runlog.event = ${requestedEvent} AND runlog.verified = 1 ${levelcheck}GROUP BY playerinrun.playerID ORDER BY points DESC`)
             .then(players => {
                 if (players.length === 0) {
                     sendMessage(message.channel.id, `No Data found for RS${level + 3} In Season ${requestedEvent} of the RS Event`)
                 }
                 else {
                     let contents: string[] = []
-                    let content = "```    Points  | Runs | Player"
+                    let content = ""
+                    if (level === -3) content = "```    Points  | Runs | lvl | Player"
+                    else content = "```    Points  | Runs | Player"
                     let k = 0
                     players.forEach(async player => {
                         const member = await fetchMember(player.playerID)
                         const points = parseFloat(player.points).toFixed(0)
-                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${points}${" ".repeat(8 - points.length)}| ${player.runcount}${" ".repeat(4 - player.runcount.toString().length)} | ${member.displayName}`
+                        let leveldisplay = ""
+                        if (level === -3) leveldisplay = ` ${player.maxlevel}${" ".repeat(3 - (player.maxlevel).toString().length)} |`
+                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${points}${" ".repeat(8 - points.length)}| ${player.runcount}${" ".repeat(4 - player.runcount.toString().length)} |${leveldisplay} ${member.displayName}`
                         if ((content + toAdd).length > 4090) {
                             contents.push(content += "```")
-                            content = `\`\`\`    Points  | Runs | Player${toAdd}`
+                            if (level === -3) content = `\`\`\`    Points  | Runs | lvl | Player${toAdd}`
+                            else content = `\`\`\`    Points  | Runs | Player${toAdd}`
                         }
                         else {
                             content += toAdd
