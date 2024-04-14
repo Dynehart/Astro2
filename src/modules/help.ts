@@ -1,5 +1,5 @@
 import { Message } from "discord.js"
-import { botchannels, prefix } from "../../config/config.js"
+import { prefix } from "../../config/config.js"
 import { getAllCommands, sendMessage } from "../bot.js"
 import { commandGroup, command, allArguments } from "./command.js"
 import { hasdefaultPerms } from "./user.js"
@@ -37,10 +37,10 @@ function gethelp(args: { lowercase: string, original: string }[], currentGroup: 
             let subcommandgroup = currentGroup.getsubcommandgroup(args[0].lowercase)
             if (subcommandgroup === null) {
                 if (!initial) {
-                    sendMessage(channelID, `Command group \`${origin}${currentGroup.name}\` does not have a subcommand \`${args[0]}\`.`)
+                    sendMessage(channelID, `Command group \`${origin}${currentGroup.name}\` does not have a subcommand \`${args[0].lowercase}\`.`)
                 }
                 else {
-                    sendMessage(channelID, `There is no command \`${args[0]}\`.`)
+                    sendMessage(channelID, `There is no command \`${args[0].lowercase}\`.`)
                 }
             }
             else {
@@ -59,10 +59,10 @@ function gethelp(args: { lowercase: string, original: string }[], currentGroup: 
         let subcommandgroup = currentGroup.getsubcommandgroup(args[0].lowercase)
         if (subcommandgroup === null) {
             if (!initial) {
-                sendMessage(channelID, `Command group \`${origin}${currentGroup.name}\` does not have a subcommandgroup \`${args[0]}\`.`)
+                sendMessage(channelID, `Command group \`${origin}${currentGroup.name}\` does not have a subcommandgroup \`${args[0].lowercase}\`.`)
             }
             else {
-                sendMessage(channelID, `There is no commandgroup \`${args[0]}\`.`)
+                sendMessage(channelID, `There is no commandgroup \`${args[0].lowercase}\`.`)
             }
         }
         else {

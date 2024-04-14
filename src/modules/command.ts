@@ -67,12 +67,12 @@ class regexpArgument extends commandArgument {
     }
 }
 class partofStringArgument extends commandArgument {
-    protected partof: string[][]
-    constructor(name: string, type: number, partof: string[][]) {
+    protected partof: string[]
+    constructor(name: string, type: number, partof: string[]) {
         super(name, type)
         this.partof = partof
         this.validateArgument = (rawInput: string) => {
-            if (this.partof.some(thisarray => thisarray.some(thisvalue => thisvalue.toLowerCase() === rawInput))) {
+            if (this.partof.some(thisvalue => thisvalue.toLowerCase() === rawInput)) {
                 return true
             }
             else {
@@ -144,7 +144,7 @@ class commandGroup {
         }
         return null
     }
-    public call(commandName: string, args: { lowercase: string, original: string }[], message: Message, d: number, origin: string, initial: boolean) {
+    public call(commandName: string, args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string, initial: boolean) {
         let space = " "
         if (initial) space = ""
         let validCommand = false
@@ -156,12 +156,13 @@ class commandGroup {
         })
         this.subcommandgroups.forEach(subcommandgroup => {
             if (subcommandgroup.name === commandName || subcommandgroup.aliases.some(alias => alias == commandName)) {
-                subcommandgroup.call(args[0].lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+                if(args.length !== 0) subcommandgroup.call(args[0].lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+else subcommandgroup.call(null, [], message, d, `${origin}${this.name}${space}`, false)
                 validCommand = true
             }
         })
         if (!validCommand && !initial) {
-            if (commandName === undefined) {
+            if (commandName === null) {
                 sendMessage(message.channel.id, `Usage: \`${prefix}${origin}${this.name}\`\n\n${this.helpText}`)
             }
             else {
@@ -180,11 +181,11 @@ class command {
     readonly usage: string
     readonly allaliases: string = ""
     private permissionLimit: (member: GuildMember) => boolean
-    private execute: (args: { lowercase: string, original: string }[], message: Message, d: number) => void
-    private channellimit: string[][]
+    private execute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void
+    private channellimit: string[]
     private deleteCommandMessage: boolean
     readonly hideHelp: boolean
-    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message, d: number) => void, channellimit: string[][], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
+    constructor(name: string, aliases: (string)[], args: commandArgument[], helpText: string, onExecute: (args: { lowercase: string, original: string }[], message: Message<true>, d: number) => void, channellimit: string[], permissionLimit: (member: GuildMember) => boolean, deleteCommandMessage: boolean, hideHelp: boolean) {
         this.name = name
         this.aliases = aliases
         this.args = args
@@ -222,9 +223,9 @@ class command {
         this.channellimit = channellimit
         this.deleteCommandMessage = deleteCommandMessage
     }
-    public call(args: { lowercase: string, original: string }[], message: Message, d: number, origin: string) {
+    public call(args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string) {
         if (this.permissionLimit(message.member)) {
-            if (this.channellimit.some(thischannelIDs => thischannelIDs.some(thischannelID => thischannelID === message.channel.id)) || this.channellimit.length === 0) {
+            if (this.channellimit.some(thischannelID => thischannelID === message.channel.id) || this.channellimit.length === 0) {
                 if (args.length === 0 && this.minargs !== 0) {
                     sendMessage(message.channel.id, `Usage: \`${prefix}${origin}${this.usage}\`\n\n${this.helpText}`)
                 }
@@ -256,7 +257,7 @@ class command {
                         else {
                             argument = this.args[args.length - 1].name
                         }
-                        sendMessage(message.channel.id, `Validation error on argument ${k}. Value \`${args[k - 1]}\` is not accepted for argument \`<${argument}>\`. For help on this command, use \`${prefix}help ${origin}${this.name}\``)
+                        sendMessage(message.channel.id, `Validation error on argument ${k}. Value \`${args[k - 1].original}\` is not accepted for argument \`<${argument}>\`. For help on this command, use \`${prefix}help ${origin}${this.name}\``)
                     }
                 }
                 else {
@@ -293,8 +294,8 @@ class command {
 
 //Append new arguments to thsi array. DO NOT declare arguments locally. The argument classes are not exported for a reason.
 const allArguments = {
-    "corpnameArgument": new partofStringArgument("corpname", 0, [Corpnames.map(thiscorp => thiscorp.name), Corpnames.map(thiscorp => thiscorp.shortname)]),
-    "wstypeArgument": new partofStringArgument("wstype", 0, [wsTypes.map(thistype => thistype.name), wsTypes.map(thistype => thistype.shortname)]),
+    "corpnameArgument": new partofStringArgument("corpname", 0, Corpnames.flatMap(thiscorp => [thiscorp.name, thiscorp.shortname])),
+    "wstypeArgument": new partofStringArgument("wstype", 0, wsTypes.flatMap(thistype => [thistype.name, thistype.shortname])),
     "wssizeArgument": new specificNumberArgument("size", 0, [5, 10, 15]),
     "membersArgument": new textArgument("members", 2),
     "shipcountArgument": new numberArgument("shipcount", 0, 1, Infinity),
@@ -311,16 +312,19 @@ const allArguments = {
     "rolesArgument": new textArgument("roles", 2),
     "optmemberArgument": new textArgument("member", 1),
     "rslevelArgument": new specificNumberArgument("rslevel", 0, rslevels),
+    "rslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => `${level}`)),
     "pastdaysArgument": new numberArgument("pastDays", 0, 0, Infinity),
     "commandArgument": new textArgument("command(s)", 3),
     "rsmodArgument": new textArgument("module", 0),
     "memberidArgument": new textArgument("memberID", 0),
-    "rslevelor0Argument": new specificNumberArgument("rslevel", 0, rslevels.concat(0)),
+    "drslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => [`${level}`, `d${level}`])),
+    "drslevelArgument": new partofStringArgument("rslevel", 0, rslevels.flatMap(level => [`${level}`, `d${level}`])),
     "searchstringArgument": new textArgument("searchstring", 0),
     "corpArgument": new textArgument("corp", 2),
     "nicknameArgument": new textArgument("nickname", 2),
     "emojiArgument": new regexpArgument("emoji", 0, /<a?:.+:(\d+)>/),
-    "messagecountArgument": new numberArgument("messagecount", 0, 1, 100)
+    "messagecountArgument": new numberArgument("messagecount", 0, 1, 100),
+    "eventseasonArgument": new numberArgument("season", 1, 0, Infinity)
 }
 
 export {

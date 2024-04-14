@@ -4,3 +4,6 @@
 /dist
 .env
 auth.json
+/.vscode
+/dist
+/.env
