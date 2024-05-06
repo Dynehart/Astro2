@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel, SlashCommandBuilder, Routes, REST } from 'discord.js';
+import { Client, GatewayIntentBits, EmbedBuilder, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel, Routes, REST, SlashCommandOptionsOnlyBuilder } from 'discord.js';
 import { GreeterRole, SFAcorp, adminRole, auditlogchannel, logchannel, prefix, representtiverole, rseventlogchannel, scorekeeperrole, welcomechannel } from '../config/config.js';
 import { autoresponsecheck } from './modules/autoresponse.js';
 import { commandGroup } from './modules/command.js';
@@ -43,8 +43,6 @@ bot.once('ready', () => {
     BaseCommandGroup = initmisc(BaseCommandGroup)
     BaseCommandGroup = initevent(BaseCommandGroup)
     const commands = initeventCommands()
-//fix urgent
-//@ts-ignore
     refreshCommands(commands)
     initAFKTimeoutCheckLoop()
     bot.guilds.fetch(SFAcorp)
@@ -462,7 +460,7 @@ async function playerInputChoice(channelID: string, userID: string, choiceList: 
     })
 }
 
-async function refreshCommands(commands: SlashCommandBuilder[]) {
+async function refreshCommands(commands: SlashCommandOptionsOnlyBuilder[]) {
     console.log(`Started refreshing ${commands.length} application (/) commands.`);
     // The put method is used to fully refresh all commands in the guild with the current set
     const data = await rest.put(
