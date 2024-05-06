@@ -43,6 +43,8 @@ bot.once('ready', () => {
     BaseCommandGroup = initmisc(BaseCommandGroup)
     BaseCommandGroup = initevent(BaseCommandGroup)
     const commands = initeventCommands()
+//fix urgent
+//@ts-ignore
     refreshCommands(commands)
     initAFKTimeoutCheckLoop()
     bot.guilds.fetch(SFAcorp)
