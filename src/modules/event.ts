@@ -144,7 +144,8 @@ function initeventCommands() {
                 .setDescription("The fourth player in the Run")
         )
         .setDMPermission(false)
-    return ([log, solo, run])
+    const commands: SlashCommandBuilder[] = [log, solo, run] 
+    return (commands)
 }
 
 async function listExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
