@@ -1,7 +1,6 @@
 import { HSCAPIkey, logchannel } from "../../config/config.js"
 import https from 'node:https'
 import { sendMessage } from "../bot.js";
-global.ReadableStream = require('web-streams-polyfill').ReadableStream;
 
 async function getPlayerModuleData(playerID: string) {
     return new Promise<any>((resolve, reject) => {
