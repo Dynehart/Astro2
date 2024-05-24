@@ -683,7 +683,7 @@ async function sendQueueStartMessage(level: { level: number, dark: boolean }) {
                         }
                         k++
                         if (k === CurrentQueue.length) {
-                            content = `${content.slice(0, content.length - 2)}\n\nSpacefleet or Ender usually have the best bonus percentage for your arts. They can be found at #7 and #8 on the RS event Leaderboard. Please leave the corp after your run!`
+                            content = `${content.slice(0, content.length - 2)}\n\nSpacefleet or Ender usually have the best bonus percentage for your arts. They can be found at #3 and #6 on the RS event Leaderboard. Please leave the corp after your run!`
                             sendMessage(rschannels[level.level][getDark(level.dark)], content).catch(err => { })
                             usersToDM.forEach(userID => {
                                 sendDM(userID, content).catch(err => { })
