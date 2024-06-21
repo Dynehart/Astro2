@@ -156,8 +156,8 @@ class commandGroup {
         })
         this.subcommandgroups.forEach(subcommandgroup => {
             if (subcommandgroup.name === commandName || subcommandgroup.aliases.some(alias => alias == commandName)) {
-                if(args.length !== 0) subcommandgroup.call(args[0].lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
-else subcommandgroup.call(null, [], message, d, `${origin}${this.name}${space}`, false)
+                if (args.length !== 0) subcommandgroup.call(args[0].lowercase, args.slice(1), message, d, `${origin}${this.name}${space}`, false)
+                else subcommandgroup.call(null, [], message, d, `${origin}${this.name}${space}`, false)
                 validCommand = true
             }
         })
@@ -292,7 +292,7 @@ class command {
     }
 }
 
-//Append new arguments to thsi array. DO NOT declare arguments locally. The argument classes are not exported for a reason.
+//Append new arguments to this array. DO NOT declare arguments locally. The argument classes are not exported for a reason.
 const allArguments = {
     "corpnameArgument": new partofStringArgument("corpname", 0, Corpnames.flatMap(thiscorp => [thiscorp.name, thiscorp.shortname])),
     "wstypeArgument": new partofStringArgument("wstype", 0, wsTypes.flatMap(thistype => [thistype.name, thistype.shortname])),
@@ -315,7 +315,7 @@ const allArguments = {
     "rslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => `${level}`)),
     "pastdaysArgument": new numberArgument("pastDays", 0, 0, Infinity),
     "commandArgument": new textArgument("command(s)", 3),
-    "rsmodArgument": new textArgument("module", 0),
+    "modlevelArgument": new numberArgument("level", 0, 0, 15),
     "memberidArgument": new textArgument("memberID", 0),
     "drslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => [`${level}`, `d${level}`])),
     "drslevelArgument": new partofStringArgument("rslevel", 0, rslevels.flatMap(level => [`${level}`, `d${level}`])),

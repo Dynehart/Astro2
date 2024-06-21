@@ -1,5 +1,5 @@
 import { queryDB } from "./DB.js"
-import { RowDataPacket } from "mysql2"
+import { escape } from "mysql2"
 import { rschannels, AFKTimeout, prefix, rsroles, runlogchannel, botchannels, maxRSsize, emojis } from "../../config/config.js"
 import { Colors, EmbedBuilder, GuildMember, GuildTextBasedChannel, Message } from "discord.js"
 import { fetchMember, fetchMessage, fetchRole, getmember, playerInputChoice, sendDM, sendEmbed, sendMessage } from "../bot.js"
@@ -18,11 +18,10 @@ function initRS(BaseCommandGroup: commandGroup) {
     const ping = new command("ping", ["pingrs", "pingqueue", "pq", "p", "mention"], [], "Pings @RSX to ask for players to join.", pingExec, allrschannels, hasdefaultPerms, true, true)
     const sub = new command("sub", [], [], "Pings @RSX to ask for a sub for the last started queue.", subExec, allrschannels, hasdefaultPerms, true, true)
 
-    const modon = new command("on", ["add"], [allArguments.rsmodArgument], `Adds the specified RS module to the ones displayed at the end of your name in in the RS queue.`, modonExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
-    const modoff = new command("off", ["remove"], [allArguments.rsmodArgument], `Removes the specified RS module from the ones displayed at the end of your name in the RS queue.`, modoffExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
-    const modview = new command("view", [], [], "Lists the RS mods you have active currently.", modviewExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
-    const modlist = new command("list", ["listall"], [], "Lists all RS modules.", modlistExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
-    const mod = new commandGroup("module", ["mod"], [], [modon, modoff, modview, modlist], "Command group for managing RS modules.", false)
+    const modgenesis = new command("genesis", ["gen", "g"], [allArguments.modlevelArgument], "Set the level of your genesis module to be displayed in the RS and DRS queue.", modgenesisExec, [], hasdefaultPerms, true, false)
+    const modenrich = new command("enich", ["en", "e"], [allArguments.modlevelArgument], "Set the level of your enrich module to be displayed in the RS and DRS queue.", modenrichExec, [], hasdefaultPerms, true, false)
+    const modrse = new command("rse", ["rsle"], [allArguments.modlevelArgument], "Set the level of your RSE module to be displayed in the RS and DRS queue.", modrseExec, [], hasdefaultPerms, true, false)
+    const mod = new commandGroup("module", ["mod"], [], [modgenesis, modenrich, modrse], "Command group for managing RS modules.", false)
 
     const rsruninfo = new command("runinfo", [], [allArguments.runidArgument], "Displays information about the RS run with the specified ID.", rsruninfoExec, [], hasdefaultPerms, true, false)
     const rsnotify = new command("notify", [], [], "Review and update your RS notification settings.", rsnotifyExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
@@ -125,86 +124,20 @@ function rsruninfoExec(args: { lowercase: string, original: string }[], message:
         })
         .catch(err => { })
 }
-function modonExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    getRSModules()
-        .then(allmods => {
-            if (allmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
-                getPlayerRSModules(message.member.id)
-                    .then(async rsmods => {
-                        if (rsmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
-                            sendMessage(message.channel.id, "You already have this module installed!")
-                        }
-                        else {
-                            let mod = allmods.find(thismod => thismod.name.toLowerCase() === args[0].lowercase)
-                            queryDB(`INSERT INTO rsmodequip(modID, userID) VALUES (${mod.ID}, ${message.member.id})`)
-                            sendMessage(message.channel.id, `${mod.name} enabled for ${message.member.displayName}`)
-                        }
-                    })
-                    .catch(err => { })
-            }
-            else {
-                sendMessage(message.channel.id, "This is not a valid module!")
-            }
-        })
-        .catch(err => { })
+function modgenesisExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const level = parseInt(args[0].lowercase)
+    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member.id)}, 'genesis', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
+    sendMessage(message.channel.id, `Genesis for ${message.member.displayName} successfully set to level ${level}!`)
 }
-function modoffExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    getRSModules()
-        .then(allmods => {
-            if (allmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
-                getPlayerRSModules(message.member.id)
-                    .then(rsmods => {
-                        if (rsmods.some(thismod => thismod.name.toLowerCase() === args[0].lowercase)) {
-                            let mod = rsmods.find(thismod => thismod.name.toLowerCase() === args[0].lowercase)
-                            queryDB(`DELETE FROM rsmodequip WHERE userID = ${message.member.id} AND modID = ${mod.ID}`)
-                            sendMessage(message.channel.id, `${mod.name} disabled for ${message.member.displayName}`)
-                        }
-                        else {
-                            sendMessage(message.channel.id, "You don't have this module installed!")
-                        }
-                    })
-                    .catch(err => { })
-            }
-            else {
-                sendMessage(message.channel.id, "This is not a valid module!")
-            }
-        })
-        .catch(err => { })
+function modenrichExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const level = parseInt(args[0].lowercase)
+    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member.id)}, 'enrich', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
+    sendMessage(message.channel.id, `Enrich for ${message.member.displayName} successfully set to level ${level}!`)
 }
-function modviewExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    getPlayerRSModules(message.member.id)
-        .then(rsmods => {
-            let list = `${message.member.displayName} - `
-            rsmods.forEach(rsmod => {
-                if (rsmod.type === 0) {
-                    list += `:${rsmod.emojiname}:`
-                }
-                else {
-                    list += `<:${rsmod.emojiname}:${rsmod.emojiID}>`
-                }
-            })
-            sendMessage(message.channel.id, list)
-        })
-        .catch(err => { })
-}
-function modlistExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    getRSModules()
-        .then(rsmods => {
-            let list = "`Module name| I |You should have:\n------------------------------"
-            rsmods.forEach(rsmod => {
-                list += `\n${rsmod.name}${" ".repeat(11 - rsmod.name.length)}|`
-                if (rsmod.type === 0) {
-                    list += `\`:${rsmod.emojiname}:\`|`
-                }
-                else {
-                    list += `\`<:${rsmod.emojiname}:${rsmod.emojiID}>\`|`
-                }
-                list += rsmod.description
-            })
-            list += "`"
-            sendMessage(message.channel.id, list)
-        })
-        .catch(err => { })
+function modrseExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const level = parseInt(args[0].lowercase)
+    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member.id)}, 'rse', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
+    sendMessage(message.channel.id, `RSE for ${message.member.displayName} successfully set to level ${level}!`)
 }
 function rsnotifyExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
     queryDB(`SELECT notificationPreference FROM notificationOptions WHERE userID = ${message.member.id}`)
@@ -547,27 +480,7 @@ function getPlayerModuleSuffix(playerID: string, dark: boolean) {
     return new Promise<string>((resolve, reject) => {
         getPlayerRSModules(playerID)
             .then(rsmods => {
-                let suffix = ""
-                rsmods.forEach(rsmod => {
-                    if (rsmod.type === 0) {
-                        suffix += `:${rsmod.emojiname}:`
-                    }
-                    else {
-                        suffix += `<:${rsmod.emojiname}:${rsmod.emojiID}>`
-                    }
-                })
-                if (!dark) {
-                    resolve(suffix)
-                }
-                else {
-                    getPlayerDRSModules(playerID)
-                        .then(rsmods => {
-                            resolve(`${suffix} ${emojis.genesis}${rsmods.genesis} ${emojis.enrich}${rsmods.enrich} ${emojis.rse}${rsmods.rse}`)
-                        })
-                        .catch(err => {
-                            reject(err)
-                        })
-                }
+                resolve(`${emojis.genesis}${rsmods.genesis} ${emojis.enrich}${rsmods.enrich} ${emojis.rse}${rsmods.rse}`)
             })
             .catch(err => {
                 reject(err)
@@ -576,37 +489,19 @@ function getPlayerModuleSuffix(playerID: string, dark: boolean) {
 }
 
 function getPlayerRSModules(playerID: string) {
-    return new Promise<RowDataPacket[]>((resolve, reject) => {
-        queryDB(`SELECT rsmod.ID, rsmod.name, rsmod.emojiname, rsmod.emojiID, rsmod.description, rsmod.type FROM rsmodequip, rsmod WHERE rsmod.ID = rsmodequip.modID AND rsmodequip.userID = ${playerID}`)
-            .then(modules => {
-                resolve(modules)
-            })
-            .catch(err => {
-                reject(err)
-            })
-    })
-}
-
-function getPlayerDRSModules(playerID: string) {
     return new Promise<{ genesis: number, enrich: number, rse: number }>((resolve, reject) => {
         getPlayerModuleData(playerID)
             .then(modlevels => {
                 if (modlevels === null) {
-                    resolve({ genesis: 0, enrich: 0, rse: 0 })
+                    queryDB(`SELECT module, level FROM rsmod WHERE userID = ${playerID}`)
+                        .then(modules => {
+                            if (modules.length === 0) resolve({ genesis: 0, enrich: 0, rse: 0 })
+                            else {
+                                resolve({ genesis: (modules.find(thismod => thismod.module === "genesis") ?? { level: 0 }).level, enrich: (modules.find(thismod => thismod.module === "enrich") ?? { level: 0 }).level, rse: (modules.find(thismod => thismod.module === "rse") ?? { level: 0 }).level })
+                            }
+                        })
                 }
                 else resolve({ genesis: (modlevels.genesis ?? { level: 0 }).level, enrich: (modlevels.enrich ?? { level: 0 }).level, rse: (modlevels.rsextender ?? { level: 0 }).level })
-            })
-            .catch(err => {
-                reject(err)
-            })
-    })
-}
-
-function getRSModules() {
-    return new Promise<RowDataPacket[]>((resolve, reject) => {
-        queryDB("SELECT ID, name, emojiname, emojiID, description, type FROM rsmod")
-            .then(list => {
-                resolve(list)
             })
             .catch(err => {
                 reject(err)
