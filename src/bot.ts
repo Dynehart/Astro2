@@ -80,7 +80,7 @@ bot.on("messageUpdate", async (oldmessage, newmessage) => {
         if (newmessage.content === "") newmessage.content = "This message has no content"
         let auditlogEmbed = new EmbedBuilder()
             .setColor(Colors.Yellow)
-            .setAuthor({ iconURL: newmessage.member.displayAvatarURL({ size: 4096 }), name: newmessage.member.displayName })
+            .setAuthor({ iconURL: newmessage.member.displayAvatarURL(), name: newmessage.member.displayName })
             .setTitle("ℹ️ Message Updated")
             .addFields(
                 { name: "Message ID", value: oldmessage.id, inline: true },
@@ -95,7 +95,7 @@ bot.on("messageDelete", async (oldmessage) => {
     if (oldmessage.content === "") oldmessage.content = "This message had no content"
     let auditlogEmbed = new EmbedBuilder()
         .setColor(Colors.Red)
-        .setAuthor({ iconURL: oldmessage.member.displayAvatarURL({ size: 4096 }), name: oldmessage.member.displayName })
+        .setAuthor({ iconURL: oldmessage.member.displayAvatarURL(), name: oldmessage.member.displayName })
         .setTitle("ℹ️ Message Deleted")
         .addFields(
             { name: "Message ID", value: oldmessage.id, inline: true },
