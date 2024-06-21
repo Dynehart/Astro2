@@ -19,7 +19,7 @@ function initRS(BaseCommandGroup: commandGroup) {
     const sub = new command("sub", [], [], "Pings @RSX to ask for a sub for the last started queue.", subExec, allrschannels, hasdefaultPerms, true, true)
 
     const modgenesis = new command("genesis", ["gen", "g"], [allArguments.modlevelArgument], "Set the level of your genesis module to be displayed in the RS and DRS queue.", modgenesisExec, [], hasdefaultPerms, true, false)
-    const modenrich = new command("enich", ["en", "e"], [allArguments.modlevelArgument], "Set the level of your enrich module to be displayed in the RS and DRS queue.", modenrichExec, [], hasdefaultPerms, true, false)
+    const modenrich = new command("enrich", ["en", "e"], [allArguments.modlevelArgument], "Set the level of your enrich module to be displayed in the RS and DRS queue.", modenrichExec, [], hasdefaultPerms, true, false)
     const modrse = new command("rse", ["rsle"], [allArguments.modlevelArgument], "Set the level of your RSE module to be displayed in the RS and DRS queue.", modrseExec, [], hasdefaultPerms, true, false)
     const mod = new commandGroup("module", ["mod"], [], [modgenesis, modenrich, modrse], "Command group for managing RS modules.", false)
 
