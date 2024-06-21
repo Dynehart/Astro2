@@ -493,7 +493,7 @@ function getPlayerRSModules(playerID: string) {
         getPlayerModuleData(playerID)
             .then(modlevels => {
                 if (modlevels === null) {
-                    queryDB(`SELECT module, level FROM rsmod WHERE userID = ${playerID}`)
+                    queryDB(`SELECT module, level FROM rsmod WHERE playerID = ${playerID}`)
                         .then(modules => {
                             if (modules.length === 0) resolve({ genesis: 0, enrich: 0, rse: 0 })
                             else {
