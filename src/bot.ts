@@ -76,33 +76,45 @@ bot.on('guildMemberAdd', async member => {
 });
 bot.on("messageUpdate", async (oldmessage, newmessage) => {
     if (oldmessage.content !== newmessage.content) {
-        if (oldmessage.content === "") oldmessage.content = "This message had no content"
-        if (newmessage.content === "") newmessage.content = "This message has no content"
-        let auditlogEmbed = new EmbedBuilder()
-            .setColor(Colors.Yellow)
-            .setAuthor({ iconURL: newmessage.member.displayAvatarURL(), name: newmessage.member.displayName })
-            .setTitle("ℹ️ Message Updated")
-            .addFields(
-                { name: "Message ID", value: oldmessage.id, inline: true },
-                { name: "Channel", value: `<#${oldmessage.channel.id}>`, inline: true },
-                { name: "Old Message", value: oldmessage.content },
-                { name: "New Message", value: newmessage.content },
-            )
-        sendEmbed(auditlogchannel, "", auditlogEmbed)
+        try {
+            if (oldmessage.content === "") oldmessage.content = "This message had no content"
+            if (newmessage.content === "") newmessage.content = "This message has no content"
+            let auditlogEmbed = new EmbedBuilder()
+                .setColor(Colors.Yellow)
+                .setAuthor({ iconURL: newmessage.member.displayAvatarURL(), name: newmessage.member.displayName })
+                .setTitle("ℹ️ Message Updated")
+                .addFields(
+                    { name: "Message ID", value: oldmessage.id, inline: true },
+                    { name: "Channel", value: `<#${oldmessage.channel.id}>`, inline: true },
+                    { name: "Old Message", value: oldmessage.content },
+                    { name: "New Message", value: newmessage.content },
+                )
+            sendEmbed(auditlogchannel, "", auditlogEmbed)
+        }
+        catch (error) {
+            sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (update):\n${oldmessage.id}\n<#${oldmessage.channel.id}>\n${oldmessage.content}\n${newmessage.content}\n${newmessage.member.displayAvatarURL()}\n${newmessage.member.displayName}`)
+            console.log(error);
+        }
     }
 })
 bot.on("messageDelete", async (oldmessage) => {
-    if (oldmessage.content === "") oldmessage.content = "This message had no content"
-    let auditlogEmbed = new EmbedBuilder()
-        .setColor(Colors.Red)
-        .setAuthor({ iconURL: oldmessage.member.displayAvatarURL(), name: oldmessage.member.displayName })
-        .setTitle("ℹ️ Message Deleted")
-        .addFields(
-            { name: "Message ID", value: oldmessage.id, inline: true },
-            { name: "Channel", value: `<#${oldmessage.channel.id}>`, inline: true },
-            { name: "Content", value: oldmessage.content },
-        )
-    sendEmbed(auditlogchannel, "", auditlogEmbed)
+    try {
+        if (oldmessage.content === "") oldmessage.content = "This message had no content"
+        let auditlogEmbed = new EmbedBuilder()
+            .setColor(Colors.Red)
+            .setAuthor({ iconURL: oldmessage.member.displayAvatarURL(), name: oldmessage.member.displayName })
+            .setTitle("ℹ️ Message Deleted")
+            .addFields(
+                { name: "Message ID", value: oldmessage.id, inline: true },
+                { name: "Channel", value: `<#${oldmessage.channel.id}>`, inline: true },
+                { name: "Content", value: oldmessage.content },
+            )
+        sendEmbed(auditlogchannel, "", auditlogEmbed)
+    }
+    catch (error) {
+        sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (delete):\n${oldmessage.id}\n<#${oldmessage.channel.id}>\n${oldmessage.content}\n${oldmessage.member.displayAvatarURL()}\n${oldmessage.member.displayName}`)
+        console.log(error);
+    }
 })
 bot.on("messageCreate", (message) => {
     const d = Date.now()
