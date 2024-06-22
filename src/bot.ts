@@ -159,16 +159,22 @@ bot.on("interactionCreate", interaction => {
                 if (interaction.isButton()) {
                     const member = await fetchMember(interaction.user.id)
                     if (member.roles.cache.some(role => role.id === scorekeeperrole || role.id === adminRole)) {
-                        await interaction.deferReply({ ephemeral: true })
-                        if (interaction.customId === 'verify') {
-                            handleVerify(interaction)
-                        }
-                        else if (interaction.customId === 'reject') {
-                            handleReject(interaction)
-                        }
-                        else if (interaction.customId === 'void') {
-                            handleVoid(interaction)
-                        }
+                        const d = Date.now()
+                        interaction.deferReply({ ephemeral: true }).then(() => {
+                            if (interaction.customId === 'verify') {
+                                handleVerify(interaction)
+                            }
+                            else if (interaction.customId === 'reject') {
+                                handleReject(interaction)
+                            }
+                            else if (interaction.customId === 'void') {
+                                handleVoid(interaction)
+                            }
+                        })
+                            .catch(err => {
+                                console.log(err)
+                                sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (button):\n${interaction.createdAt.getMilliseconds()}\n${d}\n${interaction.customId}`)
+                            })
                     }
                     else {
                         interaction.reply({ content: 'You do not have the necessary permission to use this command', ephemeral: true })
@@ -176,16 +182,22 @@ bot.on("interactionCreate", interaction => {
                 }
                 else if (interaction.isChatInputCommand()) {
                     if (interaction.channel.id === rseventlogchannel) {
-                        await interaction.deferReply()
-                        if (interaction.commandName === 'log') {
-                            handleLog(interaction)
-                        }
-                        else if (interaction.commandName === 'solo') {
-                            handleSolo(interaction)
-                        }
-                        else if (interaction.commandName === 'run') {
-                            handleRun(interaction)
-                        }
+                        const d = Date.now()
+                        interaction.deferReply().then(() => {
+                            if (interaction.commandName === 'log') {
+                                handleLog(interaction)
+                            }
+                            else if (interaction.commandName === 'solo') {
+                                handleSolo(interaction)
+                            }
+                            else if (interaction.commandName === 'run') {
+                                handleRun(interaction)
+                            }
+                        })
+                            .catch(err => {
+                                console.log(err)
+                                sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (command):\n${interaction.createdAt.getMilliseconds()}\n${d}\n${interaction.commandName}`)
+                            })
                     }
                     else {
                         interaction.reply({ content: `This is not the correct channel for this command. Use <#${rseventlogchannel}>`, ephemeral: true })
