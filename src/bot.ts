@@ -173,7 +173,7 @@ bot.on("interactionCreate", interaction => {
                         })
                             .catch(err => {
                                 console.log(err)
-                                sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (button):\n${interaction.createdTimestamp}\n${d}\n${interaction.customId}`)
+                                sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (button):\n${interaction.createdTimestamp}\n${d}\n${(d - interaction.createdTimestamp) / 1000}\n${interaction.customId}`)
                             })
                     }
                     else {
@@ -196,7 +196,7 @@ bot.on("interactionCreate", interaction => {
                         })
                             .catch(err => {
                                 console.log(err)
-                                sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (command):\n${interaction.createdTimestamp}\n${d}\n${interaction.commandName}`)
+                                sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (command):\n${interaction.createdTimestamp}\n${d}\n${(d - interaction.createdTimestamp) / 1000}\n${interaction.commandName}`)
                             })
                     }
                     else {
