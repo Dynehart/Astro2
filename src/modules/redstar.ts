@@ -527,8 +527,9 @@ async function StartQueue(level: { level: number, dark: boolean }, d: number) {
 
 async function logrun(d: number, level: { level: number; dark: boolean }, currentQueue: { playerID: string, type: number }[], event: number) {
     return new Promise<{ ID: number, shortID: number }>(async (resolve, reject) => {
-        await queryDB(`INSERT INTO runlog(runID, level, dark, event) VALUES (${d}, ${level.level}, ${boolToInt(level.dark)}, ${event})`)
-        const runID: { ID: number; shortID: number } = (await queryDB("SELECT MAX(runID) AS ID, MAX(shortID) AS shortID FROM runlog")).map(a => { return { ID: a.ID, shortID: a.shortID } })[0]
+        //@ts-ignore
+        const ID: number = (await queryDB(`INSERT INTO runlog(runID, level, dark, event) VALUES (${d}, ${level.level}, ${boolToInt(level.dark)}, ${event})`)).insertId
+        const runID: { ID: number; shortID: number } = (await queryDB(`SELECT runID as ID, shortID FROM runlog WHERE shortID = ${ID}`)).map(a => { return { ID: a.ID, shortID: a.shortID } })[0]
         let content = `Started at: <t:${Math.floor(d / 1000)}:f>\n`
         let k = 0
         currentQueue.forEach(async (playerInQueue) => {
