@@ -143,7 +143,7 @@ function initeventCommands() {
             option.setName("player4")
                 .setDescription("The fourth player in the Run")
         )
-        .setDMPermission(false) 
+        .setDMPermission(false)
     return ([log, solo, run])
 }
 
@@ -204,15 +204,18 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
                 else {
                     let contents: string[] = []
                     let content = ""
-                    if (level === -3) content = "```    Points  | Runs | lvl | Player"
-                    else content = "```    Points  | Runs | Player"
+                    if (level === -3) content = "```    Points  | Avg.  | Runs | lvl | Player"
+                    else content = "```    Points  | Avg.  | Runs | Player"
                     let k = 0
                     players.forEach(async player => {
                         const member = await fetchMember(player.playerID)
-                        const points = parseFloat(player.points).toFixed(0)
+                        const points = parseFloat(player.points)
+                        const averagePoints = ((points) / player.runcount)
+                        const averageFormattedPoints = averagePoints.toFixed(0)
+                        const formattedPoints = points.toFixed(0)
                         let leveldisplay = ""
                         if (level === -3) leveldisplay = ` ${player.maxlevel + 3}${" ".repeat(3 - (player.maxlevel + 3).toString().length)} |`
-                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${points}${" ".repeat(8 - points.length)}| ${player.runcount}${" ".repeat(4 - player.runcount.toString().length)} |${leveldisplay} ${member.displayName}`
+                        const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${formattedPoints}${" ".repeat(8 - formattedPoints.length)}| ${averageFormattedPoints}${" ".repeat(6 - averageFormattedPoints.length)}| ${player.runcount}${" ".repeat(4 - player.runcount.toString().length)} |${leveldisplay} ${member.displayName}`
                         if ((content + toAdd).length > 4090) {
                             contents.push(content += "```")
                             if (level === -3) content = `\`\`\`    Points  | Runs | lvl | Player${toAdd}`
