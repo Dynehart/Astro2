@@ -173,7 +173,7 @@ bot.on("interactionCreate", interaction => {
                         })
                             .catch(err => {
                                 console.log(err)
-                                sendMessage(interaction.channel.id, `<@${interaction.user.id}>` unfortunately, a critical latency error occured while processing this request. Please click the button again.)
+                                sendMessage(interaction.channel.id, `<@${interaction.user.id}> unfortunately, a critical latency error occured while processing this request. Please click the button again.`)
                             })
                     }
                     else {
@@ -196,7 +196,7 @@ bot.on("interactionCreate", interaction => {
                         })
                             .catch(err => {
                                 console.log(err)
-                                sendMessage(interaction.channel.id, `<@${interaction.user.id}>` unfortunately, a critical latency error occured while processing this request. Please resubmit the entire command.)
+                                sendMessage(interaction.channel.id, `<@${interaction.user.id}> unfortunately, a critical latency error occured while processing this request. Please resubmit the entire command.`)
                             })
                     }
                     else {
