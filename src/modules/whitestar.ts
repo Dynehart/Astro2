@@ -1,10 +1,10 @@
-import { EmbedBuilder, GuildMember, Message, Role } from "discord.js"
-import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel } from "../../config/config.js"
+import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message, PermissionFlagsBits, Role, SlashCommandBuilder } from "discord.js"
+import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel, runlogchannel, corpemojis } from "../../config/config.js"
 import { fetchChannel, fetchMember, fetchRole, getmember, sendEmbed, sendMessage } from "../bot.js"
 import { hasdefaultPerms, hasMemberPerms, hasRosterBuddiesPerms } from "./user.js"
 import { escape } from "mysql2"
 import { queryDB } from "./DB.js"
-import { getFormattedDeltaTime } from "./utils.js"
+import { getFormattedDeltaTime, removeMarkdownFormatting } from "./utils.js"
 import { command, allArguments, commandGroup } from "./command.js"
 
 function initWS(BaseCommandGroup: commandGroup) {
@@ -30,7 +30,103 @@ function initWS(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function rostercreateExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function initWSCommands() {
+    const recap = new SlashCommandBuilder()
+        .setName("recap")
+        .setDescription("Posts a standardized WS recap")
+        .addIntegerOption(option =>
+            option.setName("corp")
+                .setDescription(`The corporation this WS was played in`)
+                .setRequired(true)
+                .setChoices(Corpnames.map(name => { return { name: name.name, value: Corpnames.findIndex(thisname => thisname.name === name.name) } }))
+        )
+        .addStringOption(option =>
+            option.setName("enemy")
+                .setDescription(`The name of the enemy corporation`)
+                .setRequired(true)
+                .setMaxLength(64)
+        )
+        .addIntegerOption(option =>
+            option.setName("ownrelics")
+                .setDescription(`Our final relic score`)
+                .setRequired(true)
+                .setMinValue(0)
+        )
+        .addIntegerOption(option =>
+            option.setName("enemyrelics")
+                .setDescription(`The enemy's final relic score`)
+                .setRequired(true)
+                .setMinValue(0)
+        )
+        .addStringOption(option =>
+            option.setName("enddate")
+                .setDescription(`The date on which the WS ended, DD/MM/YY`)
+                .setRequired(true)
+                .setMinLength(8)
+                .setMaxLength(8)
+        )
+        .addIntegerOption(option =>
+            option.setName("type")
+                .setDescription(`The type of the WS`)
+                .setRequired(true)
+                .addChoices(wsTypes.map(name => { return { name: name.name, value: wsTypes.findIndex(thisname => thisname.name === name.name) } }))
+        )
+        .addStringOption(option =>
+            option.setName("comment")
+                .setDescription(`Optional comment for when you have something to say (256 character limit)`)
+                .setRequired(false)
+                .setMaxLength(256)
+        )
+        .setDMPermission(false)
+    return ([recap])
+}
+
+function handleRecap(interaction: ChatInputCommandInteraction) {
+    const corp = interaction.options.getInteger('corp')
+    const enemy = interaction.options.getString('enemy')
+    const ownrelics = interaction.options.getInteger('ownrelics')
+    const enemyrelics = interaction.options.getInteger('enemyrelics')
+    const enddateRAW = interaction.options.getString('enddate')
+    const type = interaction.options.getInteger('type')
+    const comment = removeMarkdownFormatting(interaction.options.getString('comment')) ?? ""
+
+    const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2})$/
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+    if (!dateRegex.test(enddateRAW)) {
+        interaction.reply({ content: `Invalid date format. Use DD/MM/YY`, ephemeral: true })
+        return
+    }
+
+    const match = enddateRAW.match(dateRegex)
+    const day = parseInt(match[1], 10)
+    const month = months[parseInt(match[2], 10) - 1]
+    const year = `20${match[3]}`
+
+    let ordinalSuffix: String
+    if (day > 3 && day < 21) ordinalSuffix = 'th'
+    else {
+        switch (day % 10) {
+            case 1: ordinalSuffix = 'st'
+            case 2: ordinalSuffix = 'nd'
+            case 3: ordinalSuffix = 'rd'
+            default: ordinalSuffix = 'th'
+        }
+    }
+
+    let content = `${ownrelics} - ${enemyrelics} `
+    if (ownrelics > enemyrelics) content += " Win"
+    else content += " Loss"
+    content += `\n${wsTypes[type].name} - Ended on the ${day}${ordinalSuffix} of ${month}, ${year}`
+    if (comment !== "") content += `\n*${comment}*`
+
+    const recapEmbed = new EmbedBuilder()
+        .setTitle(`${corpemojis[corp]} ${Corpnames[corp].name} vs. ${enemy}`)
+        .setDescription(content)
+
+    interaction.reply({ embeds: [recapEmbed] })
+}
+function rostercreateExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const size = parseInt(args[2].lowercase)
     const j = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[1].lowercase || thistype.shortname.toLowerCase() === args[1].lowercase)
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
@@ -64,7 +160,7 @@ function rostercreateExec( args: { lowercase: string, original: string }[], mess
             }
         })
 }
-function rosteraddExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rosteraddExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID, size, type FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
@@ -94,7 +190,7 @@ function rosteraddExec( args: { lowercase: string, original: string }[], message
             }
         })
 }
-function rosterremoveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rosterremoveExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID, size, type FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
@@ -129,7 +225,7 @@ function rosterremoveExec( args: { lowercase: string, original: string }[], mess
             }
         })
 }
-function rostereditExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rostereditExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const size = parseInt(args[2].lowercase)
     const j = wsTypes.findIndex(thistype => thistype.name.toLowerCase() === args[1].lowercase || thistype.shortname.toLowerCase() === args[1].lowercase)
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
@@ -151,7 +247,7 @@ function rostereditExec( args: { lowercase: string, original: string }[], messag
             }
         })
 }
-function rosterdeleteExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rosterdeleteExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[0].lowercase || thiscorp.shortname.toLowerCase() === args[0].lowercase)
     queryDB(`SELECT ID FROM wsmatch WHERE corp = ${corpIndex} AND current = 1`)
         .then(async output => {
@@ -165,7 +261,7 @@ function rosterdeleteExec( args: { lowercase: string, original: string }[], mess
             }
         })
 }
-async function wspollExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function wspollExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     await sendMessage(message.channel.id, `__**Weekly <@&${allWSrole}> signup**__: *vote in until Friday - Saturday. Scans are typically on sunday.*\n\nFor Participation in a WS you will be asked to hop to a SFA corp which may differ from your 'home' corp. You can stay there for the duration of the WS. When you see that you are assigned to that corp, please make your way over there as soon as you can. No one wants to wait long.\n\nThe minimumm requirements to sign up for a WS here are posted in **<#${mustReadChannel}>**. This is due for a rework since DN so don't take everything there at face value. Read them carefully and only sign up when you are 100% sure you can meet these requirements for the full 5 days. Teamwork and communication are the most important thing in WS. Be proactive and don't let the commanders do everything alone! Call out problems or plans you see and have.\n\n__:alarm_clock: Your Timezone and your Tech must be up-to-date in the HS-Compendium regardless of what WS type you sign up for! __\n\n**The SFA has some fixed rosters of people who run together (almost) every week. If you want to join one of them, contact:**\n_<@447800172693553153> for the weekly competitive Spacefleet-WS_\n_<@523938533778653194> for the back-to-back Ultra-Casual Deadspace-WS_\n_<@880817767031373877> for the weekly semi-competitive low-mid level WS_\n\nIf you have any questions or concerns, or want to report inappropriate behaviour of a WS participant, ping **<@&${rosterBuddiesRole}>** for help. Thank you for flying with SFA <:salute:522916552593637376>`)
     let pollEmbed = new EmbedBuilder()
         .setColor('#ffd046')
@@ -183,7 +279,7 @@ async function wspollExec( args: { lowercase: string, original: string }[], mess
         })
     queryDB("UPDATE wsmatch SET current=0")
 }
-function wsshowExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function wsshowExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     queryDB(`SELECT wsroster FROM config`).then(async rosterMessageID => {
         let d = ''
         let i = 0
@@ -247,7 +343,7 @@ function wsshowExec( args: { lowercase: string, original: string }[], message: M
             })
     })
 }
-function wsdestinycalcExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function wsdestinycalcExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const shipcount = parseInt(args[0].lowercase)
     const destinies = args[1].lowercase.split(",").map(str => parseInt(str))
     const blasts = args[2].lowercase.split(",").map(str => parseInt(str))
@@ -266,13 +362,13 @@ function wsdestinycalcExec( args: { lowercase: string, original: string }[], mes
     }
     sendMessage(message.channel.id, content)
 }
-function wsdispatchcalcExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function wsdispatchcalcExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const relics = parseInt(args[0].lowercase)
     const dispatch = parseInt(args[1].lowercase)
     const TW = parseInt(args[2].lowercase)
     sendMessage(message.channel.id, `Under TW lvl.${TW}, with ${relics} relics on the target planet, a transport with dispatch lvl.${dispatch} will take ${getFormattedDeltaTime(0, Math.floor((dispatchSpeed[dispatch] * relics * 60000) / TWSpeed[TW]))}.`)
 }
-async function wspingspamExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function wspingspamExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     let victim = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (victim !== null) {
         let text = args.slice(1).map(a => a.original).join(" ")
@@ -390,4 +486,6 @@ function removePlayerFromRoster(member: GuildMember, channelID: string, corpInde
 
 export {
     initWS,
+    initWSCommands,
+    handleRecap
 }
