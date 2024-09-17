@@ -1,5 +1,5 @@
-import { Client, GatewayIntentBits, EmbedBuilder, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel, Routes, REST, SlashCommandOptionsOnlyBuilder } from 'discord.js';
-import { GreeterRole, SFAcorp, adminRole, auditlogchannel, logchannel, prefix, representtiverole, rseventlogchannel, scorekeeperrole, welcomechannel } from '../config/config.js';
+import { Client, GatewayIntentBits, EmbedBuilder, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel, Routes, REST, SlashCommandOptionsOnlyBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { GreeterRole, SFAcorp, adminRole, auditlogchannel, logchannel, prefix, recapchannel, representtiverole, rseventlogchannel, scorekeeperrole, welcomechannel } from '../config/config.js';
 import { autoresponsecheck } from './modules/autoresponse.js';
 import { commandGroup } from './modules/command.js';
 import { initDB, queryDB } from "./modules/DB.js"
@@ -8,7 +8,7 @@ import { initAFKTimeoutCheckLoop, initRS } from './modules/redstar.js';
 import { initstats } from './modules/stats.js';
 import { initRole } from './modules/role.js';
 import { initUser } from './modules/user.js';
-import { initWS } from './modules/whitestar.js';
+import { handleRecap, initWS, initWSCommands } from './modules/whitestar.js';
 import { initmisc } from './modules/misc.js';
 import { config } from 'dotenv';
 import { handleLog, handleReject, handleRun, handleSolo, handleVerify, handleVoid, initevent, initeventCommands } from './modules/event.js';
@@ -42,7 +42,7 @@ bot.once('ready', () => {
     BaseCommandGroup = initHelp(BaseCommandGroup)
     BaseCommandGroup = initmisc(BaseCommandGroup)
     BaseCommandGroup = initevent(BaseCommandGroup)
-    const commands = initeventCommands()
+    const commands = [initeventCommands(), initWSCommands()].flat()
     refreshCommands(commands)
     initAFKTimeoutCheckLoop()
     bot.guilds.fetch(SFAcorp)
@@ -152,62 +152,77 @@ bot.on("messageCreate", (message) => {
         }
     }
 })
-bot.on("interactionCreate", interaction => {
-    queryDB("SELECT event FROM config")
-        .then(async event => {
-            if (event[0].event !== 0) {
-                if (interaction.isButton()) {
-                    const member = await fetchMember(interaction.user.id)
-                    if (member.roles.cache.some(role => role.id === scorekeeperrole || role.id === adminRole)) {
-                        const d = Date.now()
-                        interaction.deferReply({ ephemeral: true }).then(() => {
-                            if (interaction.customId === 'verify') {
-                                handleVerify(interaction)
-                            }
-                            else if (interaction.customId === 'reject') {
-                                handleReject(interaction)
-                            }
-                            else if (interaction.customId === 'void') {
-                                handleVoid(interaction)
-                            }
-                        })
-                            .catch(err => {
-                                console.log(err)
-                                sendMessage(interaction.channel.id, `<@${interaction.user.id}> unfortunately, a critical latency error occured while processing this request. Please click the button again.`)
-                            })
-                    }
-                    else {
-                        interaction.reply({ content: 'You do not have the necessary permission to use this command', ephemeral: true })
-                    }
+bot.on("interactionCreate", async interaction => {
+    if (interaction.isButton()) {
+        const member = await fetchMember(interaction.user.id)
+        if (member.roles.cache.some(role => role.id === scorekeeperrole || role.id === adminRole)) {
+            const d = Date.now()
+            interaction.deferReply({ ephemeral: true }).then(() => {
+                if (interaction.customId === 'verify') {
+                    handleVerify(interaction)
                 }
-                else if (interaction.isChatInputCommand()) {
-                    if (interaction.channel.id === rseventlogchannel) {
-                        const d = Date.now()
-                        interaction.deferReply().then(() => {
-                            if (interaction.commandName === 'log') {
-                                handleLog(interaction)
-                            }
-                            else if (interaction.commandName === 'solo') {
-                                handleSolo(interaction)
-                            }
-                            else if (interaction.commandName === 'run') {
-                                handleRun(interaction)
-                            }
-                        })
-                            .catch(err => {
-                                console.log(err)
+                else if (interaction.customId === 'reject') {
+                    handleReject(interaction)
+                }
+                else if (interaction.customId === 'void') {
+                    handleVoid(interaction)
+                }
+            })
+                .catch(err => {
+                    console.log(err)
+                    sendMessage(interaction.channel.id, `<@${interaction.user.id}> unfortunately, a critical latency error occured while processing this request. Please click the button again.`)
+                })
+        }
+        else {
+            interaction.reply({ content: 'You do not have the necessary permission to use this command', ephemeral: true })
+        }
+    }
+    else if (interaction.isChatInputCommand()) {
+        let func: (interaction: ChatInputCommandInteraction) => void
+        let eventcommand = false
+        let recapcommand = false
+        switch (interaction.commandName) {
+            case "log":
+                func = handleLog
+                eventcommand = true
+                break
+            case "solo":
+                func = handleSolo
+                eventcommand = true
+                break
+            case "run":
+                func = handleRun
+                eventcommand = true
+                break
+            case "recap":
+                func = handleRecap
+                recapcommand = true
+                break
+        }
+        if (eventcommand) {
+            queryDB("SELECT event FROM config")
+                .then(event => {
+                    if (event[0].event !== 0) {
+                        if (interaction.channel.id !== rseventlogchannel) interaction.reply({ content: `This is not the correct channel for this command. Use <#${rseventlogchannel}>`, ephemeral: true })
+                        else {
+                            interaction.deferReply().then(() => {
+                                func(interaction)
+                            }).catch(err => {
                                 sendMessage(interaction.channel.id, `<@${interaction.user.id}> unfortunately, a critical latency error occured while processing this request. Please resubmit the entire command.`)
                             })
+                        }
                     }
-                    else {
-                        interaction.reply({ content: `This is not the correct channel for this command. Use <#${rseventlogchannel}>`, ephemeral: true })
+                    else if (interaction.isRepliable()) {
+                        interaction.reply({ content: 'There is no ongoing RS Event at the moment, all related commands have been disabled.', ephemeral: true })
                     }
-                }
-            }
-            else if (interaction.isRepliable()) {
-                interaction.reply({ content: 'There is no ongoing RS Event at the moment, all related commands have been disabled.', ephemeral: true })
-            }
-        })
+                })
+        }
+        else if (recapcommand) {
+            if (interaction.channel.id !== recapchannel) interaction.reply({ content: `This is not the correct channel for this command. Use <#${recapchannel}>`, ephemeral: true })
+            else func(interaction)
+        }
+    }
+
 })
 
 async function sendMessage(channelID: string, content: string) {

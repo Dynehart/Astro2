@@ -218,8 +218,8 @@ async function leaderboardExec(args: { lowercase: string, original: string }[], 
                         const toAdd = `\n${k + 1}.${" ".repeat(3 - (k + 1).toString().length)}${formattedPoints}${" ".repeat(8 - formattedPoints.length)}| ${averageFormattedPoints}${" ".repeat(6 - averageFormattedPoints.length)}| ${player.runcount}${" ".repeat(4 - player.runcount.toString().length)} |${leveldisplay} ${member.displayName}`
                         if ((content + toAdd).length > 4090) {
                             contents.push(content += "```")
-                            if (level === -3) content = `\`\`\`    Points  | Runs | lvl | Player${toAdd}`
-                            else content = `\`\`\`    Points  | Runs | Player${toAdd}`
+                            if (level === -3) content = `\`\`\`    Points  | Avg.  | Runs | lvl | Player${toAdd}`
+                            else content = `\`\`\`    Points  | Avg.  | Runs | Player${toAdd}`
                         }
                         else {
                             content += toAdd
