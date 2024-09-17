@@ -76,7 +76,7 @@ function removeMarkdownFormatting(input: String) {
         // Remove horizontal rules (e.g., --- or ***)
         .replace(/^\s*[-*_]{3,}\s*$/gm, '')
         // Remove extra spaces and newlines
-        .replace(/\n{2,}/g, '\n').trim();
+        .replace(/\n{2,}/g, '\n').trim()
 }
 
 function boolToInt(i: boolean) {
