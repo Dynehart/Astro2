@@ -107,10 +107,10 @@ function handleRecap(interaction: ChatInputCommandInteraction) {
     if (day > 3 && day < 21) ordinalSuffix = 'th'
     else {
         switch (day % 10) {
-            case 1: ordinalSuffix = 'st';
-            case 2: ordinalSuffix = 'nd';
-            case 3: ordinalSuffix = 'rd';
-            default: ordinalSuffix = 'th';
+            case 1: ordinalSuffix = 'st'; break
+            case 2: ordinalSuffix = 'nd'; break
+            case 3: ordinalSuffix = 'rd'; break
+            default: ordinalSuffix = 'th'; break
         }
     }
 
