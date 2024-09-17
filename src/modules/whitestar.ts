@@ -115,8 +115,8 @@ function handleRecap(interaction: ChatInputCommandInteraction) {
     }
 
     let content = `${ownrelics} - ${enemyrelics} `
-    if (ownrelics > enemyrelics) content += " Win"
-    else content += " Loss"
+    if (ownrelics > enemyrelics) content += "� Win"
+    else content += "� Loss"
     content += `\n${wsTypes[type].name} - Ended on the ${day}${ordinalSuffix} of ${month}, ${year}`
     if (comment !== "") content += `\n*${comment}*`
 
