@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message, PermissionFlagsBits, Role, SlashCommandBuilder } from "discord.js"
+import { ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, Message, PermissionFlagsBits, Role, SlashCommandBuilder } from "discord.js"
 import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel, runlogchannel, corpemojis } from "../../config/config.js"
 import { fetchChannel, fetchMember, fetchRole, getmember, sendEmbed, sendMessage } from "../bot.js"
 import { hasdefaultPerms, hasMemberPerms, hasRosterBuddiesPerms } from "./user.js"
@@ -114,15 +114,23 @@ function handleRecap(interaction: ChatInputCommandInteraction) {
         }
     }
 
+    let color: number
     let content = `${ownrelics} - ${enemyrelics} `
-    if (ownrelics > enemyrelics) content += "� Win"
-    else content += "� Loss"
+    if (ownrelics > enemyrelics) {
+        content += ":green_circle: Win"
+        color = Colors.Green
+    }
+    else {
+        content += ":red_circle: Loss"
+        color = Colors.Red
+    }
     content += `\n${wsTypes[type].name} - Ended on the ${day}${ordinalSuffix} of ${month}, ${year}`
     if (comment !== "") content += `\n*${comment}*`
 
     const recapEmbed = new EmbedBuilder()
         .setTitle(`${corpemojis[corp]} ${Corpnames[corp].name} vs. ${enemy}`)
         .setDescription(content)
+        .setColor(color)
 
     interaction.reply({ embeds: [recapEmbed] })
 }
