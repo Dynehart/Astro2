@@ -1,10 +1,10 @@
-import { EmbedBuilder, GuildMember, Message, Role } from "discord.js"
-import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel } from "../../config/config.js"
+import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message, Role, SlashCommandBuilder } from "discord.js"
+import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel, corpemojis } from "../../config/config.js"
 import { fetchChannel, fetchMember, fetchRole, getmember, sendEmbed, sendMessage } from "../bot.js"
 import { hasdefaultPerms, hasMemberPerms, hasRosterBuddiesPerms } from "./user.js"
 import { escape } from "mysql2"
 import { queryDB } from "./DB.js"
-import { getFormattedDeltaTime } from "./utils.js"
+import { getFormattedDeltaTime, removeMarkdownFormatting } from "./utils.js"
 import { command, allArguments, commandGroup } from "./command.js"
 
 function initWS(BaseCommandGroup: commandGroup) {
@@ -28,6 +28,103 @@ function initWS(BaseCommandGroup: commandGroup) {
     BaseCommandGroup.addsubcommand(wspingspam)
 
     return BaseCommandGroup
+}
+
+function initWSCommands() {
+    const recap = new SlashCommandBuilder()
+        .setName("recap")
+        .setDescription("Posts a standardized WS recap")
+        .addIntegerOption(option =>
+            option.setName("corp")
+                .setDescription(`The corporation this WS was played in`)
+                .setRequired(true)
+                .setChoices(Corpnames.map(name => { return { name: name.name, value: Corpnames.findIndex(thisname => thisname.name === name.name) } }))
+        )
+        .addStringOption(option =>
+            option.setName("enemy")
+                .setDescription(`The name of the enemy corporation`)
+                .setRequired(true)
+                .setMaxLength(64)
+        )
+        .addIntegerOption(option =>
+            option.setName("ownrelics")
+                .setDescription(`Our final relic score`)
+                .setRequired(true)
+                .setMinValue(0)
+        )
+        .addIntegerOption(option =>
+            option.setName("enemyrelics")
+                .setDescription(`The enemy's final relic score`)
+                .setRequired(true)
+                .setMinValue(0)
+        )
+        .addStringOption(option =>
+            option.setName("enddate")
+                .setDescription(`The date on which the WS ended, DD/MM/YY`)
+                .setRequired(true)
+                .setMinLength(8)
+                .setMaxLength(8)
+        )
+        .addIntegerOption(option =>
+            option.setName("type")
+                .setDescription(`The type of the WS`)
+                .setRequired(true)
+                .addChoices(wsTypes.map(name => { return { name: name.name, value: wsTypes.findIndex(thisname => thisname.name === name.name) } }))
+        )
+        .addStringOption(option =>
+            option.setName("comment")
+                .setDescription(`Optional comment for when you have something to say (256 character limit)`)
+                .setRequired(false)
+                .setMaxLength(256)
+        )
+        .setDMPermission(false)
+    return ([recap])
+}
+
+function handleRecap(interaction: ChatInputCommandInteraction) {
+    const corp = interaction.options.getInteger('corp')
+    const enemy = interaction.options.getString('enemy')
+    const ownrelics = interaction.options.getInteger('ownrelics')
+    const enemyrelics = interaction.options.getInteger('enemyrelics')
+    const enddateRAW = interaction.options.getString('enddate')
+    const type = interaction.options.getInteger('type')
+    const comment = removeMarkdownFormatting(interaction.options.getString('comment')) ?? ""
+
+    const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2})$/;
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    if (!dateRegex.test(enddateRAW)) {
+        interaction.reply({ content: `Invalid date format. Use DD/MM/YY`, ephemeral: true })
+        return
+    }
+
+    const match = enddateRAW.match(dateRegex)
+    const day = parseInt(match[1], 10)
+    const month = months[parseInt(match[2], 10) - 1]
+    const year = `20${match[3]}`
+
+    let ordinalSuffix: String
+    if (day > 3 && day < 21) ordinalSuffix = 'th'
+    else {
+        switch (day % 10) {
+            case 1: ordinalSuffix = 'st';
+            case 2: ordinalSuffix = 'nd';
+            case 3: ordinalSuffix = 'rd';
+            default: ordinalSuffix = 'th';
+        }
+    }
+
+    let content = `${ownrelics} - ${enemyrelics} `
+    if (ownrelics > enemyrelics) content += "� Win"
+    else content += "� Loss"
+    content += `\n${wsTypes[type].name} - Ended on the ${day}${ordinalSuffix} of ${month}, ${year}`
+    if (comment !== "") content += `\n*${comment}*`
+
+    const recapEmbed = new EmbedBuilder()
+        .setTitle(`${corpemojis[corp]} ${Corpnames[corp].name} vs. ${enemy}`)
+        .setDescription(content)
+
+    interaction.reply({ embeds: [recapEmbed] })
 }
 
 function rostercreateExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
