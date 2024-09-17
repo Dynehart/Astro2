@@ -49,36 +49,6 @@ function getTimestampFromFormattedTime(formattedTime: string) {
     return timestamp
 }
 
-function removeMarkdownFormatting(input: String) {
-    return input
-        // Remove code blocks (e.g., ```code```)
-        .replace(/```[\s\S]*?```/g, '')
-        // Remove inline code (e.g., `code`)
-        .replace(/`(.*?)`/g, '$1')
-        // Remove links but keep the text (e.g., [text](url))
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-        // Remove images but keep the alt text (e.g., ![alt](url))
-        .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
-        // Remove bold (e.g., **bold** or __bold__)
-        .replace(/\*\*(.*?)\*\*|__(.*?)__/g, '$1$2')
-        // Remove italic (e.g., *italic* or _italic_)
-        .replace(/\*(.*?)\*|_(.*?)_/g, '$1$2')
-        // Remove strikethrough (e.g., ~~strike~~)
-        .replace(/~~(.*?)~~/g, '$1')
-        // Remove blockquotes (e.g., > quote)
-        .replace(/^\s*>+\s?/gm, '')
-        // Remove unordered lists (e.g., - item, * item)
-        .replace(/^\s*[-*+]\s+/gm, '')
-        // Remove ordered lists (e.g., 1. item)
-        .replace(/^\s*\d+\.\s+/gm, '')
-        // Remove headers (e.g., # Header)
-        .replace(/^#+\s+/gm, '')
-        // Remove horizontal rules (e.g., --- or ***)
-        .replace(/^\s*[-*_]{3,}\s*$/gm, '')
-        // Remove extra spaces and newlines
-        .replace(/\n{2,}/g, '\n').trim();
-}
-
 function boolToInt(i: boolean) {
     if (i) return 1
     else return 0
@@ -98,6 +68,5 @@ export {
     getTimestampFromFormattedTime,
     boolToInt,
     getD,
-    getDark,
-    removeMarkdownFormatting
+    getDark
 }
