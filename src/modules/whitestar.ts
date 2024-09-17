@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message, PermissionFlagsBits, Role, SlashCommandBuilder } from "discord.js"
+import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, Message, Role, SlashCommandBuilder } from "discord.js"
 import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel, runlogchannel, corpemojis } from "../../config/config.js"
 import { fetchChannel, fetchMember, fetchRole, getmember, sendEmbed, sendMessage } from "../bot.js"
 import { hasdefaultPerms, hasMemberPerms, hasRosterBuddiesPerms } from "./user.js"
