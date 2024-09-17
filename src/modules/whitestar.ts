@@ -88,7 +88,7 @@ function handleRecap(interaction: ChatInputCommandInteraction) {
     const enemyrelics = interaction.options.getInteger('enemyrelics')
     const enddateRAW = interaction.options.getString('enddate')
     const type = interaction.options.getInteger('type')
-    const comment = removeMarkdownFormatting(interaction.options.getString('comment')) ?? ""
+    const comment = removeMarkdownFormatting(interaction.options.getString('comment') ?? "")
 
     const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2})$/;
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
