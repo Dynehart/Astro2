@@ -120,6 +120,10 @@ function handleRecap(interaction: ChatInputCommandInteraction) {
         content += ":green_circle: Win"
         color = Colors.Green
     }
+    else if (ownrelics === enemyrelics) {
+        content += ":yellow_circle: Draw"
+        color = Colors.Yellow
+    }
     else {
         content += ":red_circle: Loss"
         color = Colors.Red
