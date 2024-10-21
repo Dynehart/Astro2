@@ -1,5 +1,5 @@
 import { EmbedBuilder, GuildMember, Message } from "discord.js"
-import { adminRole, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
+import { adminRole, BoDrole, boosterrole, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
 import { getallMembers, getmember, getrole, getSelfMember, sendEmbed, sendMessage } from "../bot.js"
 import { command, allArguments, commandGroup } from "./command.js"
 import { queryDB } from "./DB.js"
@@ -352,7 +352,7 @@ async function retireMember(message: Message<boolean>, name: string) {
             await member.setNickname(`[Retired] ${member.displayName}`.substring(0, 32))
             sendMessage(message.channel.id, `<@${member.id}> has been successfully retired from Activity in the Spacefleet alliance. We hope you come back one day!`)
             member.roles.cache.forEach(role => {
-                if (!(role.id === retiredrole || role.name === '@everyone')) {
+                if (!(role.id === retiredrole || role.name === '@everyone' || role.id === BoDrole || role.id === boosterrole)) {
                     member.roles.remove(role)
                 }
             })
