@@ -345,6 +345,7 @@ function hasDevPerms(member: GuildMember) {
 }
 
 async function retireMember(message: Message<boolean>, name: string) {
+    console.log(name);
     const member = await getmember(message.channel.id, name, message.member.id, false)
     if (member !== null) {
         if (member.roles.cache.some(thisrole => thisrole.id === memberrole) && member.roles.highest.position < getSelfMember().roles.highest.position) {
