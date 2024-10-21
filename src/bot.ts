@@ -86,13 +86,13 @@ bot.on("messageUpdate", async (oldmessage, newmessage) => {
                 .addFields(
                     { name: "Message ID", value: oldmessage.id, inline: true },
                     { name: "Channel", value: `<#${oldmessage.channel.id}>`, inline: true },
-                    { name: "Old Message", value: oldmessage.content },
-                    { name: "New Message", value: newmessage.content },
+                    { name: "Old Message", value: oldmessage.content.substring(0, 1024) },
+                    { name: "New Message", value: newmessage.content.substring(0, 1024) },
                 )
             sendEmbed(auditlogchannel, "", auditlogEmbed)
         }
         catch (error) {
-            sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (update):\n${oldmessage.id}\n<#${oldmessage.channel.id}>\n${oldmessage.content}\n${newmessage.content}\n${newmessage.member.displayAvatarURL()}\n${newmessage.member.displayName}`)
+            sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (update):\n${oldmessage.id}\n<#${oldmessage.channel.id}>\n${newmessage.member.displayAvatarURL()}\n${newmessage.member.displayName}`)
             console.log(error);
         }
     }
@@ -107,12 +107,12 @@ bot.on("messageDelete", async (oldmessage) => {
             .addFields(
                 { name: "Message ID", value: oldmessage.id, inline: true },
                 { name: "Channel", value: `<#${oldmessage.channel.id}>`, inline: true },
-                { name: "Content", value: oldmessage.content },
+                { name: "Content", value: oldmessage.content.substring(0, 1024) },
             )
         sendEmbed(auditlogchannel, "", auditlogEmbed)
     }
     catch (error) {
-        sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (delete):\n${oldmessage.id}\n<#${oldmessage.channel.id}>\n${oldmessage.content}\n${oldmessage.member.displayAvatarURL()}\n${oldmessage.member.displayName}`)
+        sendMessage(logchannel, `Yo <@397435995429011467> your code is shit check this out (delete):\n${oldmessage.id}\n<#${oldmessage.channel.id}>\n${oldmessage.content.substring(0, 1024)}\n${oldmessage.member.displayAvatarURL()}\n${oldmessage.member.displayName}`)
         console.log(error);
     }
 })

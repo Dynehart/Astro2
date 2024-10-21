@@ -345,7 +345,6 @@ function hasDevPerms(member: GuildMember) {
 }
 
 async function retireMember(message: Message<boolean>, name: string) {
-    console.log(name);
     const member = await getmember(message.channel.id, name, message.member.id, false)
     if (member !== null) {
         if (member.roles.cache.some(thisrole => thisrole.id === memberrole) && member.roles.highest.position < getSelfMember().roles.highest.position) {
@@ -358,8 +357,11 @@ async function retireMember(message: Message<boolean>, name: string) {
                 }
             })
         }
+        else if(member.roles.cache.some(thisrole => thisrole.id === retiredrole)) {
+            sendMessage(message.channel.id, "This User has already been retired.")
+        }
         else {
-            sendMessage(message.channel.id, "This User could not be retired.")
+            sendMessage(message.channel.id, "This User is not a member (or could not be retired)")
         }
     }
 }
