@@ -19,6 +19,7 @@ function initUser(BaseCommandGroup: commandGroup) {
 
     const recruit = new command("recruit", [], [allArguments.memberArgument, allArguments.corpnameArgument], "Recruits a specified Member into the specified Corp.", recruitExec, [], hasGreeterPerms, true, true)
     const retire = new command("retire", [], [allArguments.memberArgument], "Retires a specified Member from SFA.", retireExec, [], hasGreeterPerms, true, true)
+    const bulkretire = new command("bulkretire", [], [allArguments.membersArgument], "Retires any number of members - fast and efficient (this one's for you, MCCD)", bulkretireExec, [], hasCoordPerms, true, true)
     const setcorp = new command("setcorp", [], [allArguments.memberArgument, allArguments.corpArgument], "Updates the corp of a specified Member", setcorpExec, [], hasCaptainPerms, true, true)
     const setnick = new command("setnick", [], [allArguments.memberArgument, allArguments.nicknameArgument], "Updates the nickname of a specified Member", setnickExec, [], hasCaptainPerms, true, true)
 
@@ -28,6 +29,7 @@ function initUser(BaseCommandGroup: commandGroup) {
     BaseCommandGroup.addsubcommand(hackban)
     BaseCommandGroup.addsubcommand(recruit)
     BaseCommandGroup.addsubcommand(retire)
+    BaseCommandGroup.addsubcommand(bulkretire)
     BaseCommandGroup.addsubcommand(setcorp)
     BaseCommandGroup.addsubcommand(setnick)
     BaseCommandGroup.addsubcommand(avatar)
@@ -35,7 +37,7 @@ function initUser(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function usergiveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function usergiveExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     getmember(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async member => {
             if (member !== null) {
@@ -64,7 +66,7 @@ function usergiveExec( args: { lowercase: string, original: string }[], message:
             }
         })
 }
-function usertakeExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function usertakeExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     getmember(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async member => {
             if (member !== null) {
@@ -93,7 +95,7 @@ function usertakeExec( args: { lowercase: string, original: string }[], message:
             }
         })
 }
-function userinfoExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function userinfoExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     if (args.length === 0) {
         senduserinfo(message.member)
     }
@@ -120,7 +122,7 @@ function userinfoExec( args: { lowercase: string, original: string }[], message:
         sendEmbed(message.channel.id, "", infoembed)
     }
 }
-function usersearchExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function usersearchExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     getallMembers()
         .then(allmembers => {
             let membernames: string[] = []
@@ -162,7 +164,7 @@ function usersearchExec( args: { lowercase: string, original: string }[], messag
             }
         })
 }
-async function banExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function banExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         member.ban().then(() => {
@@ -172,7 +174,7 @@ async function banExec( args: { lowercase: string, original: string }[], message
         })
     }
 }
-async function kickExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function kickExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         member.kick().then(() => {
@@ -182,7 +184,7 @@ async function kickExec( args: { lowercase: string, original: string }[], messag
         })
     }
 }
-function hackbanExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function hackbanExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     message.guild.bans.create(args[0].lowercase).then(bannedUser => {
         //@ts-ignore
         if (bannedUser.user !== undefined && bannedUser.user !== null) {
@@ -201,14 +203,13 @@ function hackbanExec( args: { lowercase: string, original: string }[], message: 
         sendMessage(message.channel.id, "This user couldn't be banned")
     })
 }
-async function avatarExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function avatarExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         sendMessage(message.channel.id, member.displayAvatarURL({ size: 4096 }))
     }
 }
-//let text = 
-async function recruitExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function recruitExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[1].lowercase || thiscorp.shortname.toLowerCase() === args[1].lowercase)
     if (member !== null) {
@@ -222,25 +223,15 @@ async function recruitExec( args: { lowercase: string, original: string }[], mes
         sendMessage(message.channel.id, `<@${member.id}> has been successfully recruited into the ${Corpnames[corpIndex].name} Corporation. Request to join the Corp ingame. <@&${corpRoles[corpIndex]}> give them a warm welcome over there!`);
     }
 }
-async function retireExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
-    if (member !== null) {
-        if (member.roles.cache.some(thisrole => thisrole.id === memberrole) && member.roles.highest.position < getSelfMember().roles.highest.position) {
-            await member.roles.add(retiredrole)
-            await member.setNickname(`[Retired] ${member.displayName}`)
-            sendMessage(message.channel.id, `<@${member.id}> has been successfully retired from Activity in the Spacefleet alliance. We hope you come back one day!`)
-            member.roles.cache.forEach(role => {
-                if (!(role.id === retiredrole || role.name === '@everyone')) {
-                    member.roles.remove(role);
-                }
-            })
-        }
-        else {
-            sendMessage(message.channel.id, "This User could not be retired.");
-        }
-    }
+async function retireExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    await retireMember(message, args[0].lowercase)
 }
-async function setcorpExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function bulkretireExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    args.forEach(async arg => {
+        await retireMember(message, arg.lowercase)
+    })
+}
+async function setcorpExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         const split = /\[(.*?)\]/
@@ -254,7 +245,7 @@ async function setcorpExec( args: { lowercase: string, original: string }[], mes
         sendMessage(message.channel.id, `<@${member.id}>'s Corp was successfully changed from ${oldcorp} to [${newcorp}]`)
     }
 }
-async function setnickExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+async function setnickExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
     if (member !== null) {
         const split = /\[(.*?)\]/
@@ -350,6 +341,25 @@ function hasDevPerms(member: GuildMember) {
     }
     else {
         return false
+    }
+}
+
+async function retireMember(message: Message<boolean>, name: string) {
+    const member = await getmember(message.channel.id, name, message.member.id, false)
+    if (member !== null) {
+        if (member.roles.cache.some(thisrole => thisrole.id === memberrole) && member.roles.highest.position < getSelfMember().roles.highest.position) {
+            await member.roles.add(retiredrole)
+            await member.setNickname(`[Retired] ${member.displayName}`.substring(0, 32))
+            sendMessage(message.channel.id, `<@${member.id}> has been successfully retired from Activity in the Spacefleet alliance. We hope you come back one day!`)
+            member.roles.cache.forEach(role => {
+                if (!(role.id === retiredrole || role.name === '@everyone')) {
+                    member.roles.remove(role)
+                }
+            })
+        }
+        else {
+            sendMessage(message.channel.id, "This User could not be retired.")
+        }
     }
 }
 
