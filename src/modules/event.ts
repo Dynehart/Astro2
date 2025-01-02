@@ -34,7 +34,7 @@ function initevent(BaseCommandGroup: commandGroup) {
     const leaderboard = new command("leaderboard", ["scoreboard", "lb", "sb", "score"], [allArguments.rslevelor0Argument, allArguments.eventseasonArgument], "Displays the RS event leaderboard for the specified RS level and optionally of the specified season. ", leaderboardExec, [scorecheckchannel], hasdefaultPerms, true, false)
     const startevent = new command("startevent", [], [], "Starts a new RS event", starteventExec, [scorekeeperchannel], hasAdminPerms, false, true)
     const stopevent = new command("stopevent", [], [], "Stops the ongoing RS event", stopeventExec, [scorekeeperchannel], hasAdminPerms, false, true)
-    const rseresult = new command("resresult", [], [], "Prints out the results of the most recent RS event", rseresultExec, [], hasCoordPerms, true, true)
+    const rseresult = new command("rseresult", [], [], "Prints out the results of the most recent RS event", rseresultExec, [], hasCoordPerms, true, true)
 
     BaseCommandGroup.addsubcommand(list)
     BaseCommandGroup.addsubcommand(leaderboard)
@@ -279,7 +279,7 @@ async function stopeventExec(args: { lowercase: string, original: string }[], me
 async function rseresultExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const event = (await queryDB("SELECT event FROM config"))[0].event
     if (event === 0) {
-        const lastevent = (await queryDB("SELECT lastevent FROM config"))[0].event
+        const lastevent = (await queryDB("SELECT lastevent FROM config"))[0].lastevent
         queryDB(`WITH validPlayers AS (SELECT p.playerID, MAX(e.level) AS maxLevel, COUNT(DISTINCT p.runID) AS runcount FROM playerinrun p JOIN runlog e ON p.runID = e.runID WHERE p.isGuest = 0 AND e.verified = 1 AND e.event = ${lastevent} GROUP BY p.playerID HAVING COUNT(DISTINCT p.runID) >= 8), playerScores AS (SELECT p.playerID, validPlayers.maxLevel, COUNT(DISTINCT p.runID) AS runcount, SUM(e.points / p1.playercount) AS totalPoints FROM playerinrun p JOIN runlog e ON p.runID = e.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON p.runID = p1.runID JOIN validPlayers ON p.playerID = validPlayers.playerID WHERE p.isGuest = 0 AND e.level = validPlayers.maxLevel AND e.verified = 1 AND e.event = ${lastevent} GROUP BY p.playerID, validPlayers.maxLevel), rankedPlayers AS (SELECT ps.playerID, ps.maxLevel, ps.runcount, ps.totalPoints, ROW_NUMBER() OVER (PARTITION BY ps.maxLevel ORDER BY ps.totalPoints DESC) AS rank FROM playerScores ps) SELECT playerID, maxLevel AS level, runcount, totalPoints FROM rankedPlayers WHERE rank <= 3 ORDER BY level DESC, rank;`)
             .then(topPlayers => {
                 if (topPlayers.length === 0) {
