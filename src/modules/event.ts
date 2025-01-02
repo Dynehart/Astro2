@@ -293,7 +293,7 @@ async function rseresultExec(args: { lowercase: string, original: string }[], me
                         }
                         async addPlayer(member: GuildMember, level: number, points: number, runcount: number) {
                             let symbols = ""
-                            if (this.texts.some(txt => txt.level === level) || this.texts.length === 0) {
+                            if (this.texts.some(txt => txt.level === level) && this.texts.length !== 0) {
                                 const index = this.texts.findIndex(txt => txt.level === level)
                                 this.texts[index].content += `\n${this.texts[index].nextRank}. <@${member.id}>: ${points} pts. in ${runcount} runs`
                                 symbols = ["💎", "🏅"][this.texts[index].nextRank - 1]
