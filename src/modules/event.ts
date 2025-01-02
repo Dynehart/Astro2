@@ -1,7 +1,7 @@
 import { APIEmbedField, ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, Message, MessageActionRowComponentBuilder, SlashCommandBuilder, User } from "discord.js"
 import { maxRSsize, rseventlogchannel, rsmasterrole, rsroles, runlogchannel, scorecheckchannel, scorekeeperchannel } from "../../config/config.js"
 import { getQueueByID, logrun } from "./redstar.js"
-import { fetchChannel, fetchMember, fetchRole, sendEmbed, sendMessage } from "../bot.js"
+import { fetchChannel, fetchMember, fetchRole, getSelfMember, sendEmbed, sendMessage } from "../bot.js"
 import { getDark, getD } from "./utils.js"
 import { queryDB } from "./DB.js"
 import { allArguments, command, commandGroup } from "./command.js"
@@ -302,13 +302,12 @@ async function rseresultExec(args: { lowercase: string, original: string }[], me
                             else {
                                 let content = `1. <@${member.id}>: ${points} pts. in ${runcount} runs`
                                 this.texts.push({ level: level, content: content, nextRank: 2 })
-                                //await member.roles.add(rsmasterrole)
+                                await member.roles.add(rsmasterrole).catch(err => { })
                                 symbols = "👑"
                             }
                             const newname = `${member.displayName}${symbols}RS${level + 3}${symbols}`
-                            sendMessage(message.channel.id, newname)
-                            if (newname.length <= 32) {
-                                //await member.setNickname(newname)
+                            if (newname.length <= 32 && member.roles.highest.position < getSelfMember().roles.highest.position) {
+                                await member.setNickname(newname)
                             }
                         }
                         sort() {
