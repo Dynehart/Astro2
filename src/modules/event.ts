@@ -1,11 +1,11 @@
-import { APIEmbedField, ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, ChatInputCommandInteraction, Colors, EmbedBuilder, Message, MessageActionRowComponentBuilder, SlashCommandBuilder, User } from "discord.js"
-import { maxRSsize, rseventlogchannel, rsroles, runlogchannel, scorecheckchannel, scorekeeperchannel } from "../../config/config.js"
+import { APIEmbedField, ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, Message, MessageActionRowComponentBuilder, SlashCommandBuilder, User } from "discord.js"
+import { maxRSsize, rseventlogchannel, rsmasterrole, rsroles, runlogchannel, scorecheckchannel, scorekeeperchannel } from "../../config/config.js"
 import { getQueueByID, logrun } from "./redstar.js"
 import { fetchChannel, fetchMember, fetchRole, sendEmbed, sendMessage } from "../bot.js"
 import { getDark, getD } from "./utils.js"
 import { queryDB } from "./DB.js"
 import { allArguments, command, commandGroup } from "./command.js"
-import { hasAdminPerms, hasdefaultPerms } from "./user.js"
+import { hasAdminPerms, hasCoordPerms, hasdefaultPerms } from "./user.js"
 
 const verifybutton = new ButtonBuilder()
     .setCustomId('verify')
@@ -34,11 +34,13 @@ function initevent(BaseCommandGroup: commandGroup) {
     const leaderboard = new command("leaderboard", ["scoreboard", "lb", "sb", "score"], [allArguments.rslevelor0Argument, allArguments.eventseasonArgument], "Displays the RS event leaderboard for the specified RS level and optionally of the specified season. ", leaderboardExec, [scorecheckchannel], hasdefaultPerms, true, false)
     const startevent = new command("startevent", [], [], "Starts a new RS event", starteventExec, [scorekeeperchannel], hasAdminPerms, false, true)
     const stopevent = new command("stopevent", [], [], "Stops the ongoing RS event", stopeventExec, [scorekeeperchannel], hasAdminPerms, false, true)
+    const rseresult = new command("resresult", [], [], "Prints out the results of the most recent RS event", rseresultExec, [], hasCoordPerms, true, true)
 
     BaseCommandGroup.addsubcommand(list)
     BaseCommandGroup.addsubcommand(leaderboard)
     BaseCommandGroup.addsubcommand(startevent)
     BaseCommandGroup.addsubcommand(stopevent)
+    BaseCommandGroup.addsubcommand(rseresult)
 
     return BaseCommandGroup
 }
@@ -271,6 +273,72 @@ async function stopeventExec(args: { lowercase: string, original: string }[], me
     }
     else {
         sendMessage(message.channel.id, "This command is only available during a Red Star Event")
+    }
+}
+
+async function rseresultExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+    const event = (await queryDB("SELECT event FROM config"))[0].event
+    if (event === 0) {
+        const lastevent = (await queryDB("SELECT lastevent FROM config"))[0].event
+        queryDB(`WITH validPlayers AS (SELECT p.playerID, MAX(e.level) AS maxLevel, COUNT(DISTINCT p.runID) AS runcount FROM playerinrun p JOIN runlog e ON p.runID = e.runID WHERE p.isGuest = 0 AND e.verified = 1 AND e.event = ${lastevent} GROUP BY p.playerID HAVING COUNT(DISTINCT p.runID) >= 8), playerScores AS (SELECT p.playerID, validPlayers.maxLevel, COUNT(DISTINCT p.runID) AS runcount, SUM(e.points / p1.playercount) AS totalPoints FROM playerinrun p JOIN runlog e ON p.runID = e.runID JOIN (SELECT runID, COUNT(*) AS playercount FROM playerinrun WHERE isGuest = 0 GROUP BY runID) p1 ON p.runID = p1.runID JOIN validPlayers ON p.playerID = validPlayers.playerID WHERE p.isGuest = 0 AND e.level = validPlayers.maxLevel AND e.verified = 1 AND e.event = ${lastevent} GROUP BY p.playerID, validPlayers.maxLevel), rankedPlayers AS (SELECT ps.playerID, ps.maxLevel, ps.runcount, ps.totalPoints, ROW_NUMBER() OVER (PARTITION BY ps.maxLevel ORDER BY ps.totalPoints DESC) AS rank FROM playerScores ps) SELECT playerID, maxLevel AS level, runcount, totalPoints FROM rankedPlayers WHERE rank <= 3 ORDER BY level DESC, rank;`)
+            .then(topPlayers => {
+                if (topPlayers.length === 0) {
+                    sendMessage(message.channel.id, `No Data found for Season ${lastevent} of the RS Event`)
+                }
+                else {
+                    class rseResultHandler {
+                        texts: { level: number, content: string, nextRank: number }[]
+                        constructor() {
+                            this.texts = []
+                        }
+                        async addPlayer(member: GuildMember, level: number, points: number, runcount: number) {
+                            let symbols = ""
+                            if (this.texts.some(txt => txt.level === level)) {
+                                const index = this.texts.findIndex(txt => txt.level === level)
+                                this.texts[index].content += `\n${this.texts[index].nextRank}. <@${member.id}>: ${points} pts. in ${runcount} runs`
+                                symbols = ["💎", "🏅"][this.texts[index].nextRank - 1]
+                                this.texts[index].nextRank++
+                            }
+                            else {
+                                let content = `1. <@${member.id}>: ${points} pts. in ${runcount} runs`
+                                this.texts.push({ level: level, content: content, nextRank: 2 })
+                                //await member.roles.add(rsmasterrole)
+                                symbols = "👑"
+                            }
+                            const newname = `${symbols}RS${level}${symbols} ${member.displayName}`
+                            if (newname.length <= 32) {
+                                sendMessage(message.channel.id, newname)
+                                //await member.setNickname(newname)
+                            }
+                        }
+                        sort() {
+                            this.texts.sort((a, b) => b.level - a.level)
+                        }
+                    }
+
+                    let resultHandler = new rseResultHandler()
+                    let k = 0
+                    topPlayers.forEach(async player => {
+                        const member = await fetchMember(player.playerID)
+                        const points = parseInt(player.totalPoints)
+                        const level = parseInt(player.level)
+                        const runcount = parseInt(player.runcount)
+                        await resultHandler.addPlayer(member, level, points, runcount)
+                        k++
+                        if (k === topPlayers.length) {
+                            resultHandler.sort()
+                            let content = `### RSE ${lastevent} internal player ranking\n`
+                            resultHandler.texts.forEach(text => {
+                                content += `\n\n**RS${text.level}**\n${text.content}`
+                            })
+                            sendMessage(message.channel.id, content)
+                        }
+                    })
+                }
+            })
+    }
+    else {
+        sendMessage(message.channel.id, "This command is only available after a Red Star Event")
     }
 }
 
