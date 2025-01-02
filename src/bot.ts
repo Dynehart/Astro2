@@ -62,6 +62,7 @@ bot.on('guildMemberRemove', async (member) => {
         .addFields({ name: '\u200b', value: `ID: ${member.id}\nUsername: ${member.user.username}\nJoined at: <t:${Math.floor(member.joinedTimestamp / 1000)}:f>\nIn other words: <t:${Math.floor(member.joinedTimestamp / 1000)}:R>\nNew Server Members: ${member.guild.memberCount}` })
         .setThumbnail(member.user.displayAvatarURL({ size: 4096 }))
     sendEmbed(logchannel, "", farewellembed)
+    queryDB(`DELETE FROM playerinrun WHERE playerID = ${member.id}`)
 });
 bot.on('guildMemberAdd', async member => {
     let greetembed = new EmbedBuilder()
