@@ -293,7 +293,7 @@ async function rseresultExec(args: { lowercase: string, original: string }[], me
                         }
                         async addPlayer(member: GuildMember, level: number, points: number, runcount: number) {
                             let symbols = ""
-                            if (this.texts.some(txt => txt.level === level)) {
+                            if (this.texts.some(txt => txt.level === level) || this.texts.length === 0) {
                                 const index = this.texts.findIndex(txt => txt.level === level)
                                 this.texts[index].content += `\n${this.texts[index].nextRank}. <@${member.id}>: ${points} pts. in ${runcount} runs`
                                 symbols = ["💎", "🏅"][this.texts[index].nextRank - 1]
@@ -305,9 +305,9 @@ async function rseresultExec(args: { lowercase: string, original: string }[], me
                                 //await member.roles.add(rsmasterrole)
                                 symbols = "👑"
                             }
-                            const newname = `${symbols}RS${level}${symbols} ${member.displayName}`
+                            const newname = `${member.displayName}${symbols}RS${level + 3}${symbols}`
+                            sendMessage(message.channel.id, newname)
                             if (newname.length <= 32) {
-                                sendMessage(message.channel.id, newname)
                                 //await member.setNickname(newname)
                             }
                         }
@@ -329,7 +329,7 @@ async function rseresultExec(args: { lowercase: string, original: string }[], me
                             resultHandler.sort()
                             let content = `### RSE ${lastevent} internal player ranking\n`
                             resultHandler.texts.forEach(text => {
-                                content += `\n\n**RS${text.level}**\n${text.content}`
+                                content += `\n\n**RS${text.level + 3}**\n${text.content}`
                             })
                             sendMessage(message.channel.id, content)
                         }

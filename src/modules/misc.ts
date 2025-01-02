@@ -114,6 +114,7 @@ function purgeDBExec(args: { lowercase: string, original: string }[], message: M
                                 sendMessage(message.channel.id, "Database Purge cancelled.")
                             }
                         })
+                        .catch(err => { })
                 }
             })
         })
