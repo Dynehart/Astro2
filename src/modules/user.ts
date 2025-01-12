@@ -1,13 +1,13 @@
 import { EmbedBuilder, GuildMember, Message } from "discord.js"
-import { adminRole, BoDrole, boosterrole, captainRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representtiverole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
+import { adminRole, BoDrole, boosterrole, captainRole, commanderRole, coordRole, Corpnames, corpRoles, DevRole, GreeterRole, memberrole, representativerole, retiredrole, rosterBuddiesRole } from "../../config/config.js"
 import { getallMembers, getmember, getrole, getSelfMember, sendEmbed, sendMessage } from "../bot.js"
 import { command, allArguments, commandGroup } from "./command.js"
 import { queryDB } from "./DB.js"
 import { canManageRole } from "./role.js"
 
 function initUser(BaseCommandGroup: commandGroup) {
-    const usergive = new command("give", ["g"], [allArguments.memberArgument, allArguments.rolesArgument], "Assigns any amount of roles to one User", usergiveExec, [], hasCoordPerms, false, false)
-    const usertake = new command("take", ["t"], [allArguments.memberArgument, allArguments.rolesArgument], "Removes any amount of roles from one User", usertakeExec, [], hasCoordPerms, false, false)
+    const usergive = new command("give", ["g"], [allArguments.memberArgument, allArguments.rolesArgument], "Assigns any amount of roles to one User", usergiveExec, [], hasRolePerms, false, false)
+    const usertake = new command("take", ["t"], [allArguments.memberArgument, allArguments.rolesArgument], "Removes any amount of roles from one User", usertakeExec, [], hasRolePerms, false, false)
     const userinfo = new command("info", ["i"], [allArguments.optmemberArgument], "Displays information about the specified User. If no User is specified, displays information about yourself.", userinfoExec, [], hasdefaultPerms, true, false)
     const usersearch = new command("search", ["s"], [allArguments.searchstringArgument], "Searches the server for Members with a specified string in their name.", usersearchExec, [], hasdefaultPerms, true, false)
     const ban = new command("ban", [], [allArguments.memberArgument], "Bans a specified Member from the server 🔨", banExec, [], hasAdminPerms, false, true)
@@ -214,7 +214,7 @@ async function recruitExec(args: { lowercase: string, original: string }[], mess
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[1].lowercase || thiscorp.shortname.toLowerCase() === args[1].lowercase)
     if (member !== null) {
         const name = member.displayName.replace(/\[(.*?)\]/, "").trim()
-        await member.roles.remove(representtiverole)
+        await member.roles.remove(representativerole)
         await member.roles.remove(retiredrole)
         await member.roles.add(memberrole)
         await member.roles.add(corpRoles[corpIndex])
@@ -282,66 +282,39 @@ function hasdefaultPerms(member: GuildMember) {
 }
 
 function hasMemberPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === memberrole) || hasCaptainPerms(member)) {
-        return true
-    }
-    else {
-        return false
-    }
+    return member.roles.cache.some(thisrole => thisrole.id === memberrole) || hasCaptainPerms(member)
 }
 
 function hasCaptainPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === captainRole) || hasCoordPerms(member)) {
-        return true
-    }
-    else {
-        return false
-    }
+    return member.roles.cache.some(thisrole => thisrole.id === captainRole) || hasCoordPerms(member)
+}
+
+function hasRolePerms(member: GuildMember) {
+    return hasGreeterPerms(member) || hasCommanderPerms(member) || hasRosterBuddiesPerms(member)
 }
 
 function hasGreeterPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === GreeterRole) || hasCoordPerms(member)) {
-        return true
-    }
-    else {
-        return false
-    }
+    return member.roles.cache.some(thisrole => thisrole.id === GreeterRole) || hasCoordPerms(member)
+}
+
+function hasCommanderPerms(member: GuildMember) {
+    return member.roles.cache.some(thisrole => thisrole.id === commanderRole) || hasCoordPerms(member)
 }
 
 function hasRosterBuddiesPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === rosterBuddiesRole) || hasCoordPerms(member)) {
-        return true
-    }
-    else {
-        return false
-    }
+    return member.roles.cache.some(thisrole => thisrole.id === rosterBuddiesRole) || hasCoordPerms(member)
 }
 
 function hasCoordPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === coordRole) || hasAdminPerms(member)) {
-        return true
-    }
-    else {
-        return false
-    }
+    return member.roles.cache.some(thisrole => thisrole.id === coordRole) || hasAdminPerms(member)
 }
 
 function hasAdminPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === adminRole) || hasDevPerms(member)) {
-        return true
-    }
-    else {
-        return false
-    }
+    return member.roles.cache.some(thisrole => thisrole.id === adminRole) || hasDevPerms(member)
 }
 
 function hasDevPerms(member: GuildMember) {
-    if (member.roles.cache.some(thisrole => thisrole.id === DevRole) || member.id === "397435995429011467") {
-        return true
-    }
-    else {
-        return false
-    }
+     return member.roles.cache.some(thisrole => thisrole.id === DevRole) || member.id === "397435995429011467"
 }
 
 async function retireMember(message: Message<boolean>, name: string) {
@@ -373,8 +346,10 @@ export {
     hasDevPerms,
     hasGreeterPerms,
     hasCaptainPerms,
+    hasCommanderPerms,
     hasRosterBuddiesPerms,
     hasMemberPerms,
     hasdefaultPerms,
-    initUser
+    initUser,
+    hasRolePerms
 }

@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits, EmbedBuilder, Guild, Message, GuildMember, Role, ColorResolvable, MessageReaction, User, Colors, Collection, GuildTextBasedChannel, Routes, REST, SlashCommandOptionsOnlyBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { GreeterRole, SFAcorp, adminRole, auditlogchannel, logchannel, prefix, recapchannel, representtiverole, rseventlogchannel, scorekeeperrole, welcomechannel } from '../config/config.js';
+import { GreeterRole, SFAcorp, adminRole, auditlogchannel, logchannel, prefix, recapchannel, representativerole, rseventlogchannel, scorekeeperrole, welcomechannel } from '../config/config.js';
 import { autoresponsecheck } from './modules/autoresponse.js';
 import { commandGroup } from './modules/command.js';
 import { initDB, queryDB } from "./modules/DB.js"
@@ -71,7 +71,7 @@ bot.on('guildMemberAdd', async member => {
         .addFields({ name: '\u200b', value: `ID: ${member.id}\nUsername: ${member.user.username}\nJoined at: <t:${Math.floor(member.joinedTimestamp / 1000)}:f>\nIn other words: <t:${Math.floor(member.joinedTimestamp / 1000)}:R>\nNew Server Members: ${member.guild.memberCount}` })
         .setThumbnail(member.user.displayAvatarURL({ size: 4096 }))
     sendEmbed(logchannel, "", greetembed)
-    member.roles.add(representtiverole)
+    member.roles.add(representativerole)
     member.setNickname(`[] ${member.user.username}`)
     sendMessage(welcomechannel, `Welcome, <@${member.id}>! A <@&${GreeterRole}> will be with you soon. Please answer the below questions:\n⇒ What Corporation are you from, if any?\n⇒ Are you on the lookout for a position in the SFA?\n-~-~-~-~-~-\nPlease visit the <#883082845663428668> channel and read the rules. To unlock RS-queues read through <#795153050104496139> and click the reaction.\n\nWelcome To the Spacefleet Alliance Server!\n<:SpFl:529449288145829918> <:Ender:704541877365375028> <:WC:752321386902716438> <:BMC:926246325287284838> <:DS:579658975692324864> <:SOL:883405937673662484> <:YAL:780171132417605682> <:C55:780171448517263370>`)
 });

@@ -1,11 +1,12 @@
 import { EmbedBuilder, GuildMember, Message, Role } from "discord.js";
 import { getallMembers, getmember, getrole, getSelfMember, sendEmbed, sendMessage } from "../bot.js";
 import { commandGroup, command, allArguments } from "./command.js";
-import { hasAdminPerms, hasCoordPerms, hasdefaultPerms } from "./user.js";
+import { hasAdminPerms, hasCommanderPerms, hasCoordPerms, hasdefaultPerms, hasGreeterPerms, hasRolePerms, hasRosterBuddiesPerms } from "./user.js";
+import { corpRoles, memberrole, representativerole, retiredrole, WSRoles } from "../../config/config.js";
 
 function initRole(BaseCommandGroup: commandGroup) {
-    const rolegive = new command("give", ["g"], [allArguments.roleArgument, allArguments.membersArgument], "Assigns one Role to any amount of Users", rolegiveExec, [], hasCoordPerms, false, false)
-    const roletake = new command("take", ["t"], [allArguments.roleArgument, allArguments.membersArgument], "Removes one Role from any amount of Users", roletakeExec, [], hasCoordPerms, false, false)
+    const rolegive = new command("give", ["g"], [allArguments.roleArgument, allArguments.membersArgument], "Assigns one Role to any amount of Users", rolegiveExec, [], hasRolePerms, false, false)
+    const roletake = new command("take", ["t"], [allArguments.roleArgument, allArguments.membersArgument], "Removes one Role from any amount of Users", roletakeExec, [], hasRolePerms, false, false)
     const rolelist = new command("list", ["l"], [allArguments.rolesArgument], "Lists all members of a number of roles in a nice format", rolelistExec, [], hasdefaultPerms, true, false)
     const rolebulklist = new command("bulklist", [], [allArguments.rolesArgument], "Lists all members of a number of roles in a format that can be understood by me (Astronomer). Beware of `\"` in a member's name - they'll mess up the syntax!", rolebulklistExec, [], hasdefaultPerms, true, false)
     const roleclear = new command("clear", ["c"], [allArguments.roleArgument], "Removes all members from a specified role.", roleclearExec, [], hasCoordPerms, true, false)
@@ -16,7 +17,7 @@ function initRole(BaseCommandGroup: commandGroup) {
     return BaseCommandGroup
 }
 
-function rolegiveExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rolegiveExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     getrole(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async role => {
             if (role !== null) {
@@ -45,7 +46,7 @@ function rolegiveExec( args: { lowercase: string, original: string }[], message:
             }
         })
 }
-function roletakeExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function roletakeExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     getrole(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async role => {
             if (role !== null) {
@@ -74,7 +75,7 @@ function roletakeExec( args: { lowercase: string, original: string }[], message:
             }
         })
 }
-function roleclearExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function roleclearExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     getrole(message.channel.id, args[0].lowercase, message.member.id, false)
         .then(async role => {
             if (role !== null) {
@@ -102,19 +103,19 @@ function roleclearExec( args: { lowercase: string, original: string }[], message
         })
 }
 
-function rolelistExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rolelistExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     listmembers(args, message.channel.id, message.member.id, false)
 }
 
-function rolebulklistExec( args: { lowercase: string, original: string }[], message: Message, d: number) {
+function rolebulklistExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     listmembers(args, message.channel.id, message.member.id, true)
 }
 
 function canManageRole(role: Role, member: GuildMember) {
-    return (role.position < member.roles.highest.position) || hasAdminPerms(member)
+    return ((WSRoles.some(thisID => thisID === role.id)) && (hasCommanderPerms(member) || hasRosterBuddiesPerms(member))) || ((corpRoles.some(thisID => thisID === role.id) || role.id === memberrole || role.id === representativerole || role.id === retiredrole) && hasGreeterPerms(member)) || (hasCoordPerms(member) && role.position < member.roles.highest.position) || hasAdminPerms(member)
 }
 
-async function listmembers( args: { lowercase: string, original: string }[], channelID: string, memberID: string, bulk: boolean) {
+async function listmembers(args: { lowercase: string, original: string }[], channelID: string, memberID: string, bulk: boolean) {
     let InputArgs: { "operand": string, "inverse": boolean, "nextOr": boolean, "content": string }[] = []
     for (let i = 0; i < args.length; i++) {
         if (i === 0) {
