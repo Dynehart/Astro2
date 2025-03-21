@@ -409,8 +409,16 @@ async function sendRSEmbed(level: { level: number, dark: boolean }, starting: bo
             let content = `To join the queue type \`${prefix}in\`\n\n`
             currentQueue.forEach(async playerInQueue => {
                 const playerID = playerInQueue.playerID
-                let suffix = await getPlayerRSSufffix(playerID, level, starting)
-                let player = await fetchMember(playerID)
+
+                let suffix: string
+                let player: GuildMember
+                try {
+                    suffix = await getPlayerRSSufffix(playerID, level, starting)
+                }
+                catch (err) {
+                    suffix = ""
+                }
+                player = await fetchMember(playerID)
                 if (playerInQueue.type === 1) {
                     content += `${player.displayName}'s guest joined <t:${Math.floor(playerInQueue.joinedTimestamp / 1000)}:R>\n`
                 }
@@ -490,9 +498,9 @@ function getPlayerModuleSuffix(playerID: string, dark: boolean) {
 
 function getPlayerRSModules(playerID: string) {
     return new Promise<{ genesis: number, enrich: number, rse: number }>((resolve, reject) => {
-        //getPlayerModuleData(playerID)
-            //.then(modlevels => {
-                //if (modlevels === null) {
+        getPlayerModuleData(playerID)
+            .then(modlevels => {
+                if (modlevels === null) {
                     queryDB(`SELECT module, level FROM rsmod WHERE playerID = ${playerID}`)
                         .then(modules => {
                             if (modules.length === 0) resolve({ genesis: 0, enrich: 0, rse: 0 })
@@ -500,12 +508,12 @@ function getPlayerRSModules(playerID: string) {
                                 resolve({ genesis: (modules.find(thismod => thismod.module === "genesis") ?? { level: 0 }).level, enrich: (modules.find(thismod => thismod.module === "enrich") ?? { level: 0 }).level, rse: (modules.find(thismod => thismod.module === "rse") ?? { level: 0 }).level })
                             }
                         })
-                //}
-                //else resolve({ genesis: (modlevels.genesis ?? { level: 0 }).level, enrich: (modlevels.enrich ?? { level: 0 }).level, rse: (modlevels.rsextender ?? { level: 0 }).level })
-            //})
-            //.catch(err => {
-            //    reject(err)
-            //})
+                }
+                else resolve({ genesis: (modlevels.genesis ?? { level: 0 }).level, enrich: (modlevels.enrich ?? { level: 0 }).level, rse: (modlevels.rsextender ?? { level: 0 }).level })
+            })
+            .catch(err => {
+                reject(err)
+            })
     })
 }
 
