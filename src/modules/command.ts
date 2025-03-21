@@ -66,13 +66,13 @@ class regexpArgument extends commandArgument {
         }
     }
 }
-class partofStringArgument extends commandArgument {
+class specificStringArgument extends commandArgument {
     protected partof: string[]
     constructor(name: string, type: number, partof: string[]) {
         super(name, type)
         this.partof = partof
         this.validateArgument = (rawInput: string) => {
-            if (this.partof.some(thisvalue => thisvalue.toLowerCase() === rawInput)) {
+            if (this.partof.some(thisvalue => thisvalue.toLowerCase() === rawInput.toLowerCase())) {
                 return true
             }
             else {
@@ -294,8 +294,8 @@ class command {
 
 //Append new arguments to this array. DO NOT declare arguments locally. The argument classes are not exported for a reason.
 const allArguments = {
-    "corpnameArgument": new partofStringArgument("corpname", 0, Corpnames.flatMap(thiscorp => [thiscorp.name, thiscorp.shortname])),
-    "wstypeArgument": new partofStringArgument("wstype", 0, wsTypes.flatMap(thistype => [thistype.name, thistype.shortname])),
+    "corpnameArgument": new specificStringArgument("corpname", 0, Corpnames.flatMap(thiscorp => [thiscorp.name, thiscorp.shortname])),
+    "wstypeArgument": new specificStringArgument("wstype", 0, wsTypes.flatMap(thistype => [thistype.name, thistype.shortname])),
     "wssizeArgument": new specificNumberArgument("size", 0, [5, 10, 15]),
     "membersArgument": new textArgument("members", 2),
     "shipcountArgument": new numberArgument("shipcount", 0, 1, Infinity),
@@ -312,13 +312,13 @@ const allArguments = {
     "rolesArgument": new textArgument("roles", 2),
     "optmemberArgument": new textArgument("member", 1),
     "rslevelArgument": new specificNumberArgument("rslevel", 0, rslevels),
-    "rslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => `${level}`)),
+    "rslevelor0Argument": new specificStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => `${level}`)),
     "pastdaysArgument": new numberArgument("pastDays", 0, 0, Infinity),
     "commandArgument": new textArgument("command(s)", 3),
     "modlevelArgument": new numberArgument("level", 0, 0, 15),
     "memberidArgument": new textArgument("memberID", 0),
-    "drslevelor0Argument": new partofStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => [`${level}`, `d${level}`])),
-    "drslevelArgument": new partofStringArgument("rslevel", 0, rslevels.flatMap(level => [`${level}`, `d${level}`])),
+    "drslevelor0Argument": new specificStringArgument("rslevel", 0, rslevels.concat(0).flatMap(level => [`${level}`, `d${level}`])),
+    "drslevelArgument": new specificStringArgument("rslevel", 0, rslevels.flatMap(level => [`${level}`, `d${level}`])),
     "searchstringArgument": new textArgument("searchstring", 0),
     "corpArgument": new textArgument("corp", 2),
     "nicknameArgument": new textArgument("nickname", 2),

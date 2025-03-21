@@ -230,7 +230,7 @@ async function sendMessage(channelID: string, content: string) {
     return new Promise<Message>((resolve, reject) => {
         fetchChannel(channelID)
             .then(channel => {
-                channel.send(content).then(sent => {
+                channel.send(content.replaceAll("@everyone", "").replaceAll(`<@&${SFA_Guild.roles.everyone.id}>`, "")).then(sent => {
                     resolve(sent)
                 })
             })
@@ -257,7 +257,7 @@ async function sendEmbed(channelID: string, content: string, embed: EmbedBuilder
     return new Promise<Message>((resolve, reject) => {
         fetchChannel(channelID)
             .then(channel => {
-                channel.send({ content: content, embeds: [embed] }).then(sent => {
+                channel.send({ content: content.replaceAll("@everyone", "").replaceAll(`<@&${SFA_Guild.roles.everyone.id}>`, ""), embeds: [embed] }).then(sent => {
                     resolve(sent)
                 })
             })

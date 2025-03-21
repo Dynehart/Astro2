@@ -44,7 +44,7 @@ function gethelp(args: { lowercase: string, original: string }[], currentGroup: 
                 }
             }
             else {
-                let content = `${subcommandgroup.name}\n\n\`\`\`Commands:`
+                let content = `${subcommandgroup.name}: ${prefix}${origin}${currentGroup.name}${subcommandgroup.name}\n\n\`\`\`Commands:`
                 content += subcommandgroup.gethelp()
                 content += "```"
                 content += bottomText
