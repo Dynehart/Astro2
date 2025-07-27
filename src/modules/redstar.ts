@@ -635,10 +635,7 @@ async function getRSQueueMessage(level: { level: number, dark: boolean }) {
     return new Promise<Message>((resolve, reject) => {
         queryDB(`SELECT messageID FROM rsqueuemessage WHERE level = ${level.level} AND dark = ${boolToInt(level.dark)}`)
             .then(queuemessageID => {
-                if (queuemessageID === undefined) {
-                    resolve(null)
-                }
-                else if (queuemessageID[0].messageID === null) {
+                if (queuemessageID[0] === undefined || queuemessageID[0].messageID === null) {
                     resolve(null)
                 }
                 else {
