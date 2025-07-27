@@ -8,7 +8,7 @@ import { commandGroup, command, allArguments } from "./command.js"
 import { boolToInt, getD, getDark } from "./utils.js"
 import { getPlayerModuleData } from "./compendium.js"
 
-let lastRSrolemention: { regular: number, dark?: number }[] = [{ regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }]
+let lastRSrolemention: { regular: number, dark?: number }[] = [{ regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0 }]
 
 /*
     IMPORTANT: The RSlevel is stored as an int from 0-9, corresponding to rs3-12. This is so that arrays can easily be indexed by the rslevel directly, starting at 0.
