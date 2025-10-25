@@ -71,9 +71,9 @@ async function tidyExec(args: { lowercase: string, original: string }[], message
                 .catch(() => { })
         }
     }
-    function handleChoice(choice: number, filteredmessages: Message<boolean>[]) {
+    async function handleChoice(choice: number, filteredmessages: Message<boolean>[]) {
         if (choice === 0) {
-            filteredmessages.forEach(msg => msg.delete());
+            await Promise.allSettled(filteredmessages.map(async msg => msg.delete()))
             sendMessage(message.channel.id, `Successfully deleted ${filteredmessages.length} messages!`)
                 .then(sent => {
                     setTimeout(() => {
