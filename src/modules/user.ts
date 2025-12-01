@@ -6,33 +6,33 @@ import { queryDB } from "./DB.js"
 import { canManageRole } from "./role.js"
 
 function initUser(BaseCommandGroup: commandGroup) {
-    const usergive = new command("give", ["g"], [allArguments.memberArgument, allArguments.rolesArgument], "Assigns any amount of roles to one User", usergiveExec, [], hasRolePerms, false, false)
-    const usertake = new command("take", ["t"], [allArguments.memberArgument, allArguments.rolesArgument], "Removes any amount of roles from one User", usertakeExec, [], hasRolePerms, false, false)
-    const userinfo = new command("info", ["i"], [allArguments.optmemberArgument], "Displays information about the specified User. If no User is specified, displays information about yourself.", userinfoExec, [], hasdefaultPerms, true, false)
-    const usersearch = new command("search", ["s"], [allArguments.searchstringArgument], "Searches the server for Members with a specified string in their name.", usersearchExec, [], hasdefaultPerms, true, false)
-    const ban = new command("ban", [], [allArguments.memberArgument], "Bans a specified Member from the server 🔨", banExec, [], hasAdminPerms, false, true)
-    const kick = new command("kick", [], [allArguments.memberArgument], "Kicks a specified Member from the server 👢", kickExec, [], hasCoordPerms, false, true)
+    //const usergive = new command("give", ["g"], [allArguments.memberArgument, allArguments.rolesArgument], "Assigns any amount of roles to one User", usergiveExec, [], hasRolePerms, false, false)
+    //const usertake = new command("take", ["t"], [allArguments.memberArgument, allArguments.rolesArgument], "Removes any amount of roles from one User", usertakeExec, [], hasRolePerms, false, false)
+    //const userinfo = new command("info", ["i"], [allArguments.optmemberArgument], "Displays information about the specified User. If no User is specified, displays information about yourself.", userinfoExec, [], hasdefaultPerms, true, false)
+    //const usersearch = new command("search", ["s"], [allArguments.searchstringArgument], "Searches the server for Members with a specified string in their name.", usersearchExec, [], hasdefaultPerms, true, false)
+    //const ban = new command("ban", [], [allArguments.memberArgument], "Bans a specified Member from the server 🔨", banExec, [], hasAdminPerms, false, true)
+    //const kick = new command("kick", [], [allArguments.memberArgument], "Kicks a specified Member from the server 👢", kickExec, [], hasCoordPerms, false, true)
     const hackban = new command("hackban", [], [allArguments.memberidArgument], "Bans the member with the specified ID from tthe server 🔨", hackbanExec, [], hasAdminPerms, false, true)
-    const avatar = new command("avatar", ["a"], [allArguments.memberArgument], "Displays the Avatar of the specified Member", avatarExec, [], hasdefaultPerms, true, false)
+    //const avatar = new command("avatar", ["a"], [allArguments.memberArgument], "Displays the Avatar of the specified Member", avatarExec, [], hasdefaultPerms, true, false)
 
-    const user = new commandGroup("user", ["u"], [], [usergive, usertake, userinfo, usersearch], "Command group for managing users", false)
+    //const user = new commandGroup("user", ["u"], [], [usergive, usertake, userinfo, usersearch], "Command group for managing users", false)
 
-    const recruit = new command("recruit", [], [allArguments.memberArgument, allArguments.corpnameArgument], "Recruits a specified Member into the specified Corp.", recruitExec, [], hasGreeterPerms, true, true)
-    const retire = new command("retire", [], [allArguments.memberArgument], "Retires a specified Member from SFA.", retireExec, [], hasGreeterPerms, true, true)
-    const bulkretire = new command("bulkretire", [], [allArguments.membersArgument], "Retires any number of members - fast and efficient (this one's for you, MCCD)", bulkretireExec, [], hasCoordPerms, true, true)
-    const setcorp = new command("setcorp", [], [allArguments.memberArgument, allArguments.corpArgument], "Updates the corp of a specified Member", setcorpExec, [], hasCaptainPerms, true, true)
-    const setnick = new command("setnick", [], [allArguments.memberArgument, allArguments.nicknameArgument], "Updates the nickname of a specified Member", setnickExec, [], hasCaptainPerms, true, true)
+    //const recruit = new command("recruit", [], [allArguments.memberArgument, allArguments.corpnameArgument], "Recruits a specified Member into the specified Corp.", recruitExec, [], hasGreeterPerms, true, true)
+    //const retire = new command("retire", [], [allArguments.memberArgument], "Retires a specified Member from SFA.", retireExec, [], hasGreeterPerms, true, true)
+    //const bulkretire = new command("bulkretire", [], [allArguments.membersArgument], "Retires any number of members - fast and efficient (this one's for you, MCCD)", bulkretireExec, [], hasCoordPerms, true, true)
+    //const setcorp = new command("setcorp", [], [allArguments.memberArgument, allArguments.corpArgument], "Updates the corp of a specified Member", setcorpExec, [], hasCaptainPerms, true, true)
+    //const setnick = new command("setnick", [], [allArguments.memberArgument, allArguments.nicknameArgument], "Updates the nickname of a specified Member", setnickExec, [], hasCaptainPerms, true, true)
 
-    BaseCommandGroup.addsubcommandgroup(user)
-    BaseCommandGroup.addsubcommand(ban)
-    BaseCommandGroup.addsubcommand(kick)
+    //BaseCommandGroup.addsubcommandgroup(user)
+    /*BaseCommandGroup.addsubcommand(ban)
+    BaseCommandGroup.addsubcommand(kick)*/
     BaseCommandGroup.addsubcommand(hackban)
-    BaseCommandGroup.addsubcommand(recruit)
+    /*BaseCommandGroup.addsubcommand(recruit)
     BaseCommandGroup.addsubcommand(retire)
     BaseCommandGroup.addsubcommand(bulkretire)
     BaseCommandGroup.addsubcommand(setcorp)
     BaseCommandGroup.addsubcommand(setnick)
-    BaseCommandGroup.addsubcommand(avatar)
+    BaseCommandGroup.addsubcommand(avatar)*/
 
     return BaseCommandGroup
 }
