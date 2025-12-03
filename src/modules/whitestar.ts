@@ -18,15 +18,15 @@ function initWS(BaseCommandGroup: commandGroup) {
 
     const wsdestinycalc = new command("destinycalc", ["destcalc"], [allArguments.shipcountArgument, allArguments.destinylevelsArgument, allArguments.blastlevelsArgument, allArguments.arealevelsArgument], "Calculates the damage done by destinies of the specified levels to blastshields and areashields of the specified levels which protect a specified amount of ships. Individual mod levels are seperated by `,` without a whitespace.", wsdestinycalcExec, [], hasdefaultPerms, true, false)
     const wsdispatchcalc = new command("dispatchcalc", [], [allArguments.relicsArgument, allArguments.dispatchlevelArgument, allArguments.twlevelArgument], "Calculates the time a TS with dispatch of specified level will do.", wsdispatchcalcExec, [], hasdefaultPerms, true, false)
-    //const wspingspam = new command("pingspam", ["pingspaming", "ps"], [allArguments.memberArgument, allArguments.plaintextArgument], "When one ping isn't enough: pings the specified member 5 times with the specified text.", wspingspamExec, [], hasMemberPerms, true, true)
+    const wspingspam = new command("pingspam", ["pingspaming", "ps"], [allArguments.memberArgument, allArguments.plaintextArgument], "When one ping isn't enough: pings the specified member 5 times with the specified text.", wspingspamExec, [], hasMemberPerms, true, true)
     //const wspoll = new command("poll", [], [], "Creates a new poll for WS signup", wspollExec, [signupchannel], hasRosterBuddiesPerms, true, false)
     //const wsshow = new command("show", [], [allArguments.wstypeArgument], "Lists the signups from the latest poll", wsshowExec, [rosterbuildingchannel], hasRosterBuddiesPerms, true, false)
 
-    const whitestar = new commandGroup("whitestar", ["ws"], [], [wsdestinycalc, wsdispatchcalc, /*wspingspam, wspoll, wsshow*/], "Command group for managing WS-related commands.", false)
+    const whitestar = new commandGroup("whitestar", ["ws"], [], [wsdestinycalc, wsdispatchcalc, wspingspam, /*wspoll, wsshow*/], "Command group for managing WS-related commands.", false)
 
     BaseCommandGroup.addsubcommandgroup(whitestar)
     //BaseCommandGroup.addsubcommandgroup(roster)
-    //BaseCommandGroup.addsubcommand(wspingspam)
+    BaseCommandGroup.addsubcommand(wspingspam)
 
     return BaseCommandGroup
 }

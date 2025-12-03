@@ -16,6 +16,8 @@ import { handleLog, handleReject, handleRun, handleSolo, handleVerify, handleVoi
 let SFA_Guild: Guild;
 let selfMember: GuildMember;
 let BaseCommandGroup = new commandGroup("", [], [], [], "", false)
+let memberCache: Collection<string, GuildMember>
+let lastMemberUpdate = 0
 
 const bot = new Client({
     intents:
@@ -37,7 +39,7 @@ bot.once('ready', () => {
     BaseCommandGroup = initRS(BaseCommandGroup)
     BaseCommandGroup = initWS(BaseCommandGroup)
     BaseCommandGroup = initUser(BaseCommandGroup)
-    //BaseCommandGroup = initRole(BaseCommandGroup)
+    BaseCommandGroup = initRole(BaseCommandGroup)
     BaseCommandGroup = initstats(BaseCommandGroup)
     BaseCommandGroup = initHelp(BaseCommandGroup)
     BaseCommandGroup = initmisc(BaseCommandGroup)
@@ -50,6 +52,8 @@ bot.once('ready', () => {
             SFA_Guild = guild
             SFA_Guild.members.fetch()
                 .then(members => {
+                    memberCache = members
+                    lastMemberUpdate = Date.now()
                     selfMember = members.get(getSelfUser().id)
                 })
         })
@@ -396,11 +400,22 @@ async function getmember(channelID: string, membername: string, callerID: string
 }
 
 async function getallMembers() {
-    return new Promise<Collection<string, GuildMember>>(async (resolve) => {
-        SFA_Guild.members.fetch()
-            .then(allmembers => {
-                resolve(allmembers)
-            })
+    return new Promise<Collection<string, GuildMember>>(async (resolve, reject) => {
+        const d = Date.now();
+        if (d < lastMemberUpdate + 60000) {
+            resolve(memberCache)
+        }
+        else {
+            SFA_Guild.members.fetch()
+                .then(allmembers => {
+                    memberCache = allmembers
+                    lastMemberUpdate = d
+                    resolve(allmembers)
+                })
+                .catch(error => {
+                    reject(error)
+                })
+        }
     })
 }
 

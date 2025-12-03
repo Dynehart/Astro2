@@ -36,5 +36,3 @@ async function getPlayerModuleData(playerID: string) {
 export {
     getPlayerModuleData
 }
-
-//getPlayerModuleData(message.member.id)

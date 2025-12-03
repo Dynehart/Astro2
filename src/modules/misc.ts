@@ -8,12 +8,12 @@ import { queryDB } from "./DB.js";
 function initmisc(BaseCommandGroup: commandGroup) {
     const sfa = new command("sfa", [], [], "Displays information about the Spacefleet Alliance", sfaExec, [], hasdefaultPerms, true, true)
     const emoji = new command("emoji", ["emote"], [allArguments.emojiArgument], "Displays a Emoji in full Size", emojiExec, [], hasdefaultPerms, false, false)
-    //const tidy = new command("tidy", [], [allArguments.messagecountArgument, allArguments.optmemberArgument], "Cleans a channel of up to 100 messages, optionally only removing those from a specified Member.", tidyExec, [], hasCoordPerms, true, true)
+    const tidy = new command("tidy", [], [allArguments.messagecountArgument, allArguments.optmemberArgument], "Cleans a channel of up to 100 messages, optionally only removing those from a specified Member.", tidyExec, [], hasCoordPerms, true, true)
     const purgeDB = new command("purgeDB", [], [], "None of your business", purgeDBExec, [], hasDevPerms, false, true)
 
     BaseCommandGroup.addsubcommand(sfa)
     BaseCommandGroup.addsubcommand(emoji)
-    //BaseCommandGroup.addsubcommand(tidy)
+    BaseCommandGroup.addsubcommand(tidy)
     BaseCommandGroup.addsubcommand(purgeDB)
 
     return BaseCommandGroup

@@ -25,12 +25,12 @@ function initRS(BaseCommandGroup: commandGroup) {
 
     const rsruninfo = new command("runinfo", [], [allArguments.runidArgument], "Displays information about the RS run with the specified ID.", rsruninfoExec, [], hasdefaultPerms, true, false)
     const rsnotify = new command("notify", [], [], "Review and update your RS notification settings.", rsnotifyExec, [botchannels, allrschannels].flat(), hasdefaultPerms, true, false)
-    //const rsbanadd = new command("add", [], [allArguments.memberArgument, allArguments.rslevelArgument], "Bans a specified member from participation in RS queues of the specified level and higher.", rsbanaddExec, [], hasCoordPerms, false, true)
-    //const rsbanremove = new command("remove", ["delete", "alleviate"], [allArguments.memberArgument], "Removes all RS bans from a specified member.", rsbanremoveExec, [], hasCoordPerms, false, true)
-    //const rsbanlist = new command("list", ["view", "show"], [], "Lists all active RS bans", rsbanlistExec, [], hasCaptainPerms, true, false)
-    //const rsban = new commandGroup("ban", [], [], [rsbanadd, rsbanremove, rsbanlist], "Command group for managing RS bans.", false)
+    const rsbanadd = new command("add", [], [allArguments.memberArgument, allArguments.rslevelArgument], "Bans a specified member from participation in RS queues of the specified level and higher.", rsbanaddExec, [], hasCoordPerms, false, true)
+    const rsbanremove = new command("remove", ["delete", "alleviate"], [allArguments.memberArgument], "Removes all RS bans from a specified member.", rsbanremoveExec, [], hasCoordPerms, false, true)
+    const rsbanlist = new command("list", ["view", "show"], [], "Lists all active RS bans", rsbanlistExec, [], hasCaptainPerms, true, false)
+    const rsban = new commandGroup("ban", [], [], [rsbanadd, rsbanremove, rsbanlist], "Command group for managing RS bans.", false)
 
-    const redstar = new commandGroup("redstar", ["rs"], [/*rsban*/], [rsruninfo, rsnotify], "Command group for managing RS related commands.", false)
+    const redstar = new commandGroup("redstar", ["rs"], [rsban], [rsruninfo, rsnotify], "Command group for managing RS related commands.", false)
 
     const in_ = new command("in", ["i", "join"], [], "Join a RS queue.", inExec, [], hasdefaultPerms, true, true)
     const out = new command("out", ["o", "leave"], [], "Leave a RS queue.", outExec, allrschannels, hasdefaultPerms, true, true)
