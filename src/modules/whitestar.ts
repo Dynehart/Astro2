@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, Message, Role, SlashCommandBuilder } from "discord.js"
-import { areaHP, blastHP, Corpnames, destinydamage, dispatchSpeed, prefix, TWSpeed, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, rosterbuildingchannel, runlogchannel, corpemojis } from "../../config/config.js"
+import { Corpnames, prefix, signupchannel, WSRoles, wsTypes, allWSrole, mustReadChannel, rosterBuddiesRole, corpemojis } from "../../config/config.js"
 import { fetchChannel, fetchMember, fetchRole, getmember, sendEmbed, sendMessage } from "../bot.js"
-import { hasdefaultPerms, hasMemberPerms, hasRosterBuddiesPerms } from "./user.js"
+import { hasMemberPerms } from "./user.js"
 import { escape } from "mysql2"
 import { queryDB } from "./DB.js"
-import { getFormattedDeltaTime, removeMarkdownFormatting } from "./utils.js"
+import { removeMarkdownFormatting } from "./utils.js"
 import { command, allArguments, commandGroup } from "./command.js"
 
 function initWS(BaseCommandGroup: commandGroup) {
