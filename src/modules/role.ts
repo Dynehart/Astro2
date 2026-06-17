@@ -18,13 +18,13 @@ function initRole(BaseCommandGroup: commandGroup) {
 }
 
 function rolegiveExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    getrole(message.channel.id, args[0].lowercase, message.member.id, false)
+    getrole(message.channel.id, args[0].lowercase, message.member!!.id, false)
         .then(async role => {
             if (role !== null) {
-                if (canManageRole(role, message.member)) {
+                if (canManageRole(role, message.member!!)) {
                     if (role.position < getSelfMember().roles.highest.position) {
                         for (let index = 1; index < args.length; index++) {
-                            let member = await getmember(message.channel.id, args[index].lowercase, message.member.id, false)
+                            let member = await getmember(message.channel.id, args[index].lowercase, message.member!!.id, false)
                             if (member !== null) {
                                 if (member.roles.cache.some(thisrole => thisrole.id === role.id)) {
                                     sendMessage(message.channel.id, `${member.displayName} already had ${role.name}`)
@@ -47,13 +47,13 @@ function rolegiveExec(args: { lowercase: string, original: string }[], message: 
         })
 }
 function roletakeExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    getrole(message.channel.id, args[0].lowercase, message.member.id, false)
+    getrole(message.channel.id, args[0].lowercase, message.member!.id, false)
         .then(async role => {
             if (role !== null) {
-                if (canManageRole(role, message.member)) {
+                if (canManageRole(role, message.member!)) {
                     if (role.position < getSelfMember().roles.highest.position) {
                         for (let index = 1; index < args.length; index++) {
-                            let member = await getmember(message.channel.id, args[index].lowercase, message.member.id, false)
+                            let member = await getmember(message.channel.id, args[index].lowercase, message.member!.id, false)
                             if (member !== null) {
                                 if (member.roles.cache.some(thisrole => thisrole.id === role.id)) {
                                     member.roles.remove(role)
@@ -76,10 +76,10 @@ function roletakeExec(args: { lowercase: string, original: string }[], message: 
         })
 }
 function roleclearExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    getrole(message.channel.id, args[0].lowercase, message.member.id, false)
+    getrole(message.channel.id, args[0].lowercase, message.member!.id, false)
         .then(async role => {
             if (role !== null) {
-                if (canManageRole(role, message.member)) {
+                if (canManageRole(role, message.member!)) {
                     if (role.position < getSelfMember().roles.highest.position) {
                         const rolemembers = role.members.clone().map(thisvalue => thisvalue)
                         if (rolemembers.length === 0) {
@@ -104,11 +104,11 @@ function roleclearExec(args: { lowercase: string, original: string }[], message:
 }
 
 function rolelistExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    listmembers(args, message.channel.id, message.member.id, false)
+    listmembers(args, message.channel.id, message.member!.id, false)
 }
 
 function rolebulklistExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    listmembers(args, message.channel.id, message.member.id, true)
+    listmembers(args, message.channel.id, message.member!.id, true)
 }
 
 function canManageRole(role: Role, member: GuildMember) {
@@ -288,14 +288,14 @@ async function listmembers(args: { lowercase: string, original: string }[], chan
                                     listembed.setTitle(`Continued:`)
                                 }
                                 listembed.setDescription(contents[i])
-                                listembed.setColor(role.color)
+                                listembed.setColor(newargs[0].role.color)
                                 sendEmbed(channelID, "", listembed)
                             }
                         }
                         else {
                             let listembed = new EmbedBuilder()
                             listembed.setTitle(`There are no Members with ${rolenames}.`)
-                            listembed.setColor(role.color)
+                            listembed.setColor(newargs[0].role.color)
                             sendEmbed(channelID, "", listembed)
                         }
                     }

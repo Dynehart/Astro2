@@ -8,10 +8,10 @@ import { commandGroup, command, allArguments } from "./command.js"
 import { boolToInt, getD, getDark } from "./utils.js"
 import { getPlayerModuleData } from "./compendium.js"
 
-let lastRSrolemention: { regular: number, dark?: number }[] = [{ regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0 }]
+let lastRSrolemention: { regular: number, dark: number }[] = [{ regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }, { regular: 0, dark: 0 }]
 
 /*
-    IMPORTANT: The RSlevel is stored as an int from 0-9, corresponding to rs3-12. This is so that arrays can easily be indexed by the rslevel directly, starting at 0.
+    IMPORTANT: The RSlevel is stored as an int from 0-9, corresponding to rs3-12. This is so that arrays can easily be indexed by the rslevel directly, starting at 0. In retrospect this is stupid but now it's tech debt
 */
 function initRS(BaseCommandGroup: commandGroup) {
     const allrschannels = rschannels.flatMap(channels => Object.values(channels))
@@ -55,7 +55,7 @@ function initRS(BaseCommandGroup: commandGroup) {
 }
 
 async function rsbanaddExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         await queryDB(`DELETE FROM rsbannedplayers WHERE playerID = ${member.id}`)
         await queryDB(`INSERT INTO rsbannedplayers(playerID, level) VALUES (${member.id}, ${args[1].lowercase})`)
@@ -63,7 +63,7 @@ async function rsbanaddExec(args: { lowercase: string, original: string }[], mes
     }
 }
 async function rsbanremoveExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         await queryDB(`DELETE FROM rsbannedplayers WHERE playerID = ${member.id}`)
         sendMessage(message.channel.id, `The rsban on ${member.displayName}, if there was one, has been alleviated.`)
@@ -73,7 +73,7 @@ async function rsbanlistExec(args: { lowercase: string, original: string }[], me
     const bannedPlayers = await queryDB(`SELECT playerID, level FROM rsbannedplayers`)
     let content = "Level - Player\n"
     for (let i = 0; i < bannedPlayers.length; i++) {
-        const member = await getmember(message.channel.id, bannedPlayers[i].playerID, message.member.id, true)
+        const member = await getmember(message.channel.id, bannedPlayers[i].playerID, message.member!.id, true)
         if (member !== null) content += `${bannedPlayers[i].level} - ${member.displayName}\n`
         if (i === bannedPlayers.length - 1) {
             let bannedEmbed = new EmbedBuilder()
@@ -102,7 +102,7 @@ function subExec(args: { lowercase: string, original: string }[], message: Messa
     getLastStartedQueue(rsLevel)
         .then(lastQueue => {
             if (lastQueue.queueUsers.some(user => user.playerID === message.author.id)) {
-                sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `<@&${rsroles[rsLevel.level][getDark(rsLevel.dark)]}> <@!${message.member.id}> needs a sub!`)
+                sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `<@&${rsroles[rsLevel.level][getDark(rsLevel.dark)]}> <@!${message.member!.id}> needs a sub!`)
                 lastRSrolemention[rsLevel.level][getDark(rsLevel.dark)] = d
             }
             else {
@@ -126,21 +126,21 @@ function rsruninfoExec(args: { lowercase: string, original: string }[], message:
 }
 function modgenesisExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const level = parseInt(args[0].lowercase)
-    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member.id)}, 'genesis', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
-    sendMessage(message.channel.id, `Genesis for ${message.member.displayName} successfully set to level ${level}!`)
+    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member!.id)}, 'genesis', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
+    sendMessage(message.channel.id, `Genesis for ${message.member!.displayName} successfully set to level ${level}!`)
 }
 function modenrichExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const level = parseInt(args[0].lowercase)
-    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member.id)}, 'enrich', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
-    sendMessage(message.channel.id, `Enrich for ${message.member.displayName} successfully set to level ${level}!`)
+    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member!.id)}, 'enrich', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
+    sendMessage(message.channel.id, `Enrich for ${message.member!.displayName} successfully set to level ${level}!`)
 }
 function modrseExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     const level = parseInt(args[0].lowercase)
-    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member.id)}, 'rse', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
-    sendMessage(message.channel.id, `RSE for ${message.member.displayName} successfully set to level ${level}!`)
+    queryDB(`INSERT INTO rsmod (playerID, module, level) VALUES(${escape(message.member!.id)}, 'rse', ${escape(level)}) ON DUPLICATE KEY UPDATE level = ${escape(level)}`)
+    sendMessage(message.channel.id, `RSE for ${message.member!.displayName} successfully set to level ${level}!`)
 }
 function rsnotifyExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
-    queryDB(`SELECT notificationPreference FROM notificationOptions WHERE userID = ${message.member.id}`)
+    queryDB(`SELECT notificationPreference FROM notificationOptions WHERE userID = ${message.member!.id}`)
         .then(optionValue => {
             let currentPreference: number
             let noPref: boolean
@@ -153,14 +153,14 @@ function rsnotifyExec(args: { lowercase: string, original: string }[], message: 
                 noPref = false
                 currentPreference = parseInt(optionValue[0].notificationPreference)
             }
-            playerInputChoice(message.channel.id, message.member.id, preferences, "Option", "Red Star Notification Settings", Colors.Yellow, `Your current selection is: ${preferences[currentPreference]}`)
+            playerInputChoice(message.channel.id, message.member!.id, preferences, "Option", "Red Star Notification Settings", Colors.Yellow, `Your current selection is: ${preferences[currentPreference]}`)
                 .then(async newPreference => {
                     sendMessage(message.channel.id, `Your setting has been updated to '${preferences[newPreference]}'`)
                     if (noPref) {
-                        queryDB(`INSERT INTO notificationOptions(userID, notificationPreference) VALUES (${message.member.id}, ${newPreference})`)
+                        queryDB(`INSERT INTO notificationOptions(userID, notificationPreference) VALUES (${message.member!.id}, ${newPreference})`)
                     }
                     else {
-                        queryDB(`UPDATE notificationOptions SET notificationPreference=${newPreference} WHERE userID = ${message.member.id}`)
+                        queryDB(`UPDATE notificationOptions SET notificationPreference=${newPreference} WHERE userID = ${message.member!.id}`)
                     }
                 })
                 .catch(err => { })
@@ -170,7 +170,7 @@ function rsnotifyExec(args: { lowercase: string, original: string }[], message: 
 async function inExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
     const rsLevel = getrslevel(message.channel)
     const bannedPlayers = await queryDB(`SELECT playerID, level FROM rsbannedplayers`)
-    if (bannedPlayers.some(bannedplayer => bannedplayer.playerID === message.member.id && bannedplayer.level <= rsLevel.level)) {
+    if (bannedPlayers.some(bannedplayer => bannedplayer.playerID === message.member!.id && bannedplayer.level <= rsLevel.level)) {
         sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `You are banned from joining RS queues of this level. If you are not sure why, speak to a Coordinator`)
     }
     else {
@@ -178,10 +178,10 @@ async function inExec(args: { lowercase: string, original: string }[], message: 
             .then(queues => {
                 if (queues.some(queue => queue.level === rsLevel.level && queue.dark === rsLevel.dark)) {
                     sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `You are in for ${getD(rsLevel.dark)}RS${rsLevel.level + 3}!`)
-                    queryDB(`UPDATE rsqueueuser SET lastseenTimestamp=${d}, AFKwarned=0 WHERE playerID = ${message.member.id} AND level = ${rsLevel.level} AND dark = ${boolToInt(rsLevel.dark)}`)
+                    queryDB(`UPDATE rsqueueuser SET lastseenTimestamp=${d}, AFKwarned=0 WHERE playerID = ${message.member!.id} AND level = ${rsLevel.level} AND dark = ${boolToInt(rsLevel.dark)}`)
                 }
                 else {
-                    addToQueue(rsLevel, message.member, false, d)
+                    addToQueue(rsLevel, message.member!, false, d)
                 }
             })
             .catch(err => { })
@@ -190,11 +190,11 @@ async function inExec(args: { lowercase: string, original: string }[], message: 
 async function guestExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
     const rsLevel = getrslevel(message.channel)
     const bannedPlayers = await queryDB(`SELECT playerID, level FROM rsbannedplayers`)
-    if (bannedPlayers.some(bannedplayer => bannedplayer.playerID === message.member.id && bannedplayer.level <= rsLevel.level)) {
+    if (bannedPlayers.some(bannedplayer => bannedplayer.playerID === message.member!.id && bannedplayer.level <= rsLevel.level)) {
         sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `You are banned from adding guests to RS queues of this level. If you are not sure why, speak to a Coordinator`)
     }
     else {
-        addToQueue(rsLevel, message.member, true, d)
+        addToQueue(rsLevel, message.member!, true, d)
     }
 }
 function outExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
@@ -202,7 +202,7 @@ function outExec(args: { lowercase: string, original: string }[], message: Messa
         .then(queues => {
             const rsLevel = getrslevel(message.channel)
             if (queues.some(queue => queue.level === rsLevel.level && queue.dark === rsLevel.dark)) {
-                removeFromQueue(rsLevel, message.member, false, { level: 0, dark: null })
+                removeFromQueue(rsLevel, message.member!, false, { level: 0, dark: false })
             }
             else {
                 sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `You are not currently in the ${getD(rsLevel.dark)}RS${rsLevel.level + 3} queue`)
@@ -212,10 +212,10 @@ function outExec(args: { lowercase: string, original: string }[], message: Messa
 }
 function removeguestExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
     const rsLevel = getrslevel(message.channel)
-    queryDB(`SELECT level, type FROM rsqueueuser WHERE playerID = ${message.member.id} AND type = 1 AND level = ${rsLevel.level} AND dark = ${boolToInt(rsLevel.dark)}`)
+    queryDB(`SELECT level, type FROM rsqueueuser WHERE playerID = ${message.member!.id} AND type = 1 AND level = ${rsLevel.level} AND dark = ${boolToInt(rsLevel.dark)}`)
         .then(queues => {
             if (queues.length !== 0) {
-                removeFromQueue(rsLevel, message.member, true, { level: 0, dark: null })
+                removeFromQueue(rsLevel, message.member!, true, { level: 0, dark: false })
             }
             else {
                 sendMessage(rschannels[rsLevel.level][getDark(rsLevel.dark)], `Your guest is not currently in the ${getD(rsLevel.dark)}RS${rsLevel.level + 3} queue`)
@@ -248,12 +248,7 @@ function getrslevel(channel: GuildTextBasedChannel) {
     }
     else {
         const dindex = rschannels.findIndex(thisID => channel.id === thisID.dark)
-        if (dindex !== -1) {
-            return { level: dindex, dark: true }
-        }
-        else {
-            console.error(`Couldn't find level of Channel "${channel.name}" with ID ${channel.id}. This function should not have been triggered by a message in this channel, please check your configuration`)
-        }
+        return { level: dindex, dark: true }
     }
 }
 
@@ -632,7 +627,7 @@ async function CheckPlayerInStartingQueue(level: { level: number, dark: boolean 
 }
 
 async function getRSQueueMessage(level: { level: number, dark: boolean }) {
-    return new Promise<Message>((resolve, reject) => {
+    return new Promise<Message | null>((resolve, reject) => {
         queryDB(`SELECT messageID FROM rsqueuemessage WHERE level = ${level.level} AND dark = ${boolToInt(level.dark)}`)
             .then(queuemessageID => {
                 if (queuemessageID[0] === undefined || queuemessageID[0].messageID === null) {
@@ -681,10 +676,10 @@ async function getCurrentQueue(level: { level: number, dark: boolean }) {
     })
 }
 
+/** 
+ * gets the last started RS queue for a specified level
+ */
 async function getLastStartedQueue(level: { level: number, dark: boolean }) {
-    /** 
-    gets the last started RS queue for a specified level
-    */
     return new Promise<{ "queue": { "shortID": number, "ID": number }, "queueUsers": { "playerID": string, "isGuest": boolean }[] }>((resolve, reject) => {
         queryDB(`SELECT shortID, runID FROM runlog WHERE level = ${level.level} AND dark = ${boolToInt(level.dark)} ORDER BY shortID DESC LIMIT 1`)
             .then(lastQueue => {
@@ -704,7 +699,7 @@ async function getLastStartedQueue(level: { level: number, dark: boolean }) {
 
 async function getQueueByID(id: number) {
     //gets the queue with the specified ID.
-    return new Promise<{ "queue": { "shortID": number, "ID": number, "level": number, "dark": boolean, "event": number, "logged": boolean, "verified": boolean, "points": number }, "queueUsers": { "playerID": string, "isGuest": boolean }[] }>((resolve, reject) => {
+    return new Promise<{ "queue": { "shortID": number, "ID": number, "level": number, "dark": boolean, "event": number, "logged": boolean, "verified": boolean, "points": number }, "queueUsers": { "playerID": string, "isGuest": boolean }[] } |null>((resolve, reject) => {
         queryDB(`SELECT shortID, runID, level, dark, event, logged, verified, points FROM runlog WHERE shortID = ${id} OR runID = ${id}`)
             .then(queue => {
                 if (queue.length === 1) {

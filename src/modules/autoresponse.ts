@@ -1,6 +1,6 @@
 import { Message } from "discord.js"
 import { sendMessage } from "../bot.js"
-import { channel } from "node:diagnostics_channel"
+import { hasCoordPerms } from "./user.js"
 
 async function autoresponsecheck(message: Message, d: number, args: string[]) {
     if (message.content.toLowerCase().includes("pineapple") && message.content.toLowerCase().includes("pizza")) {
@@ -10,8 +10,11 @@ async function autoresponsecheck(message: Message, d: number, args: string[]) {
     if (message.content.toLowerCase().includes('skillissue')) {
         sendMessage(message.channel.id, "https://media.discordapp.net/attachments/780173035042373663/1083389158367711302/yqkbgcpftpma1.jpg")
     }
-    if(message.content.startsWith(".fuckthis")) {
+    if (message.content.startsWith(".fuckthis")) {
         sendMessage(message.channel.id, "https://tenor.com/view/sml-chef-pee-pee-mallet-smash-smashing-food-gif-26137478")
+    }
+    if (message.content.startsWith(".banhammer") && hasCoordPerms(message.member!)) {
+        sendMessage(message.channel.id, "https://tenor.com/view/bane-no-banned-and-you-are-explode-gif-16047504")
     }
 }
 

@@ -16,13 +16,11 @@ function initWS(BaseCommandGroup: commandGroup) {
     //const rosterdelete = new command("delete", [], [allArguments.corpnameArgument], "Deletes the current roster for the specified corp.", rosterdeleteExec, [rosterbuildingchannel], hasRosterBuddiesPerms, false, false)
     //const roster = new commandGroup("roster", ["rosters"], [], [rostercreate, rosteradd, rosterremove, rosteredit, rosterdelete], "Command group for managing the rosters.", false)
 
-    const wsdestinycalc = new command("destinycalc", ["destcalc"], [allArguments.shipcountArgument, allArguments.destinylevelsArgument, allArguments.blastlevelsArgument, allArguments.arealevelsArgument], "Calculates the damage done by destinies of the specified levels to blastshields and areashields of the specified levels which protect a specified amount of ships. Individual mod levels are seperated by `,` without a whitespace.", wsdestinycalcExec, [], hasdefaultPerms, true, false)
-    const wsdispatchcalc = new command("dispatchcalc", [], [allArguments.relicsArgument, allArguments.dispatchlevelArgument, allArguments.twlevelArgument], "Calculates the time a TS with dispatch of specified level will do.", wsdispatchcalcExec, [], hasdefaultPerms, true, false)
     const wspingspam = new command("pingspam", ["pingspaming", "ps"], [allArguments.memberArgument, allArguments.plaintextArgument], "When one ping isn't enough: pings the specified member 5 times with the specified text.", wspingspamExec, [], hasMemberPerms, true, true)
     //const wspoll = new command("poll", [], [], "Creates a new poll for WS signup", wspollExec, [signupchannel], hasRosterBuddiesPerms, true, false)
     //const wsshow = new command("show", [], [allArguments.wstypeArgument], "Lists the signups from the latest poll", wsshowExec, [rosterbuildingchannel], hasRosterBuddiesPerms, true, false)
 
-    const whitestar = new commandGroup("whitestar", ["ws"], [], [wsdestinycalc, wsdispatchcalc, wspingspam, /*wspoll, wsshow*/], "Command group for managing WS-related commands.", false)
+    const whitestar = new commandGroup("whitestar", ["ws"], [], [wspingspam, /*wspoll, wsshow*/], "Command group for managing WS-related commands.", false)
 
     BaseCommandGroup.addsubcommandgroup(whitestar)
     //BaseCommandGroup.addsubcommandgroup(roster)
@@ -83,12 +81,12 @@ function initWSCommands() {
 }
 
 function handleRecap(interaction: ChatInputCommandInteraction) {
-    const corp = interaction.options.getInteger('corp')
-    const enemy = interaction.options.getString('enemy')
-    const ownrelics = interaction.options.getInteger('ownrelics')
-    const enemyrelics = interaction.options.getInteger('enemyrelics')
-    const enddateRAW = interaction.options.getString('enddate')
-    const type = interaction.options.getInteger('type')
+    const corp: number = interaction.options.getInteger('corp')!
+    const enemy: string = interaction.options.getString('enemy')!
+    const ownrelics: number = interaction.options.getInteger('ownrelics')!
+    const enemyrelics: number = interaction.options.getInteger('enemyrelics')!
+    const enddateRAW: string = interaction.options.getString('enddate')!
+    const type: number = interaction.options.getInteger('type')!
     const comment = removeMarkdownFormatting(interaction.options.getString('comment') ?? "")
 
     const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2})$/;
@@ -99,7 +97,7 @@ function handleRecap(interaction: ChatInputCommandInteraction) {
         return
     }
 
-    const match = enddateRAW.match(dateRegex)
+    const match = enddateRAW.match(dateRegex)!
     const day = parseInt(match[1], 10)
     const month = months[parseInt(match[2], 10) - 1]
     const year = `20${match[3]}`
@@ -149,21 +147,21 @@ function rostercreateExec(args: { lowercase: string, original: string }[], messa
                 let validroster = false
                 let matchID: number
                 for (let playerIndex = 3; playerIndex < args.length; playerIndex++) {
-                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member.id, false)
+                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member!.id, false)
                     if (member !== null) {
                         if (!validroster) {
                             await queryDB(`INSERT INTO wsmatch(corp, type, size, current) VALUES (${corpIndex}, ${escape(wsTypes[j].name)}, ${size}, 1)`)
                             matchID = (await queryDB(`SELECT MAX(ID) AS id FROM wsmatch`))[0].id
                             validroster = true
                         }
-                        await addPlayerToRoster(member, playerIndex - 3, size, message.channel.id, corpIndex, matchID)
+                        await addPlayerToRoster(member, playerIndex - 3, size, message.channel.id, corpIndex, matchID!)
                     }
                     if (playerIndex === args.length - 1) {
                         if (!validroster) {
                             sendMessage(message.channel.id, "No valid members were provided, roster creation cancelled.")
                         }
                         else {
-                            sendRosterMessage(matchID)
+                            sendRosterMessage(matchID!)
                         }
                     }
                 }
@@ -183,7 +181,7 @@ function rosteraddExec(args: { lowercase: string, original: string }[], message:
                 const size: number = output[0].size
                 const otherPlayers = (await queryDB(`SELECT playerID FROM wsplayer WHERE matchID =${matchID}`)).length
                 for (let playerIndex = 1; playerIndex < args.length; playerIndex++) {
-                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member.id, false)
+                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member!.id, false)
                     if (member !== null) {
                         validroster = true
                         await addPlayerToRoster(member, playerIndex + otherPlayers - 1, size, message.channel.id, corpIndex, matchID)
@@ -212,7 +210,7 @@ function rosterremoveExec(args: { lowercase: string, original: string }[], messa
                 const matchID: number = output[0].ID
                 let rosterxists = true
                 for (let playerIndex = 1; playerIndex < args.length; playerIndex++) {
-                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member.id, false)
+                    let member = await getmember(message.channel.id, args[playerIndex].lowercase, message.member!.id, false)
                     if (member !== null) {
                         validroster = true
                         rosterxists = await removePlayerFromRoster(member, message.channel.id, corpIndex, matchID)
@@ -292,7 +290,7 @@ async function wspollExec(args: { lowercase: string, original: string }[], messa
         })
     queryDB("UPDATE wsmatch SET current=0")
 }
-function wsshowExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+function wsshowExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
     queryDB(`SELECT wsroster FROM config`).then(async rosterMessageID => {
         let d = ''
         let i = 0
@@ -325,15 +323,15 @@ function wsshowExec(args: { lowercase: string, original: string }[], message: Me
                     parameters.title2 = "as Backup "
                     validResponse = true
                 }
-                if (validResponse == true) {
-                    msg.reactions.resolve(parameters.emoji).users.fetch().then(users => users.forEach(user => {
+                if (validResponse == true && msg.reactions.resolve(parameters.emoji)) {
+                    msg.reactions.resolve(parameters.emoji)!.users.fetch().then(users => users.forEach(user => {
                         message.guild.members.fetch(user.id)
                             .then(member => {
                                 if (!user.bot) {
                                     d += `${i + 1}. ${member.displayName}\n`
                                     i++;
                                 }
-                                if (k === msg.reactions.resolve(parameters.emoji).count - 1 && !sent) {
+                                if (k === msg.reactions.resolve(parameters.emoji)!.count - 1 && !sent) {
                                     rosterembed
                                         .setTitle(`Signups ${parameters.title2}for ${parameters.title}WS`)
                                         .setDescription(`${i} Players have signed up ${parameters.title2}for ${parameters.title}WS`)
@@ -356,33 +354,8 @@ function wsshowExec(args: { lowercase: string, original: string }[], message: Me
             })
     })
 }
-function wsdestinycalcExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const shipcount = parseInt(args[0].lowercase)
-    const destinies = args[1].lowercase.split(",").map(str => parseInt(str))
-    const blasts = args[2].lowercase.split(",").map(str => parseInt(str))
-    const areas = args[3].lowercase.split(",").map(str => parseInt(str))
-    const cumulativeDamage = destinies.reduce((a, b) => { return a + destinydamage[b] }, 0)
-    const cumulativeHP = blasts.reduce((a, b) => { return a + blastHP[b] }, 0) + areas.reduce((a, b) => { return a + areaHP[b] }, 0)
-    let content = `There are ${shipcount} ships, protected by ${cumulativeHP} HP of shields.\n\nThere is a total of ${cumulativeDamage} damage done to each of those ship, resulting in a total of ${cumulativeDamage * shipcount} damage.\n\n`
-    if (cumulativeDamage * shipcount > cumulativeHP) {
-        content += `The damage will wipe out the shields and deal a total of ${(cumulativeDamage * shipcount) - cumulativeHP} damage to the hulls of the ships, but only Papa knows to which ones.`
-    }
-    else if (cumulativeDamage * shipcount < cumulativeHP) {
-        content += `The damage will not deplete shields and leave a total of ${cumulativeHP - (cumulativeDamage * shipcount)} hp in the shields, but only Papa knows in which ones.`
-    }
-    else {
-        content += "The damage will cleanly wipe out the shields but won't even scratch the hulls of the ships."
-    }
-    sendMessage(message.channel.id, content)
-}
-function wsdispatchcalcExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const relics = parseInt(args[0].lowercase)
-    const dispatch = parseInt(args[1].lowercase)
-    const TW = parseInt(args[2].lowercase)
-    sendMessage(message.channel.id, `Under TW lvl.${TW}, with ${relics} relics on the target planet, a transport with dispatch lvl.${dispatch} will take ${getFormattedDeltaTime(0, Math.floor((dispatchSpeed[dispatch] * relics * 60000) / TWSpeed[TW]))}.`)
-}
 async function wspingspamExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    let victim = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    let victim = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (victim !== null) {
         let text = args.slice(1).map(a => a.original).join(" ")
         for (let i = 0; i < 5; i++) {

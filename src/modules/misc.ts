@@ -42,15 +42,15 @@ function emojiExec(args: { lowercase: string, original: string }[], message: Mes
 async function tidyExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     if (message.channel.type === ChannelType.GuildText) {
         if (args.length === 2) {
-            const member = await getmember(message.channel.id, args[1].lowercase, message.member.id, false)
+            const member = await getmember(message.channel.id, args[1].lowercase, message.member!.id, false)
             if (member !== null) {
                 let messages = await message.channel.messages.fetch({ limit: parseInt(args[0].lowercase), before: message.id })
                 let filteredmessages: Message[] = []
                 messages.forEach(msg => {
-                    if (msg.member.id === member.id) filteredmessages.push(msg)
+                    if (msg.member && msg.member.id === member.id) filteredmessages.push(msg)
                 })
                 if (filteredmessages.length !== 0) {
-                    playerInputChoice(message.channel.id, message.member.id, ["YES", "NO"], "YES/NO", "Tidy Channel", Colors.Red, `Are you sure you want to delete ${filteredmessages.length} messages by ${member.displayName}?`)
+                    playerInputChoice(message.channel.id, message.member!.id, ["YES", "NO"], "YES/NO", "Tidy Channel", Colors.Red, `Are you sure you want to delete ${filteredmessages.length} messages by ${member.displayName}?`)
                         .then(choice => {
                             handleChoice(choice, filteredmessages);
                         })
@@ -64,7 +64,7 @@ async function tidyExec(args: { lowercase: string, original: string }[], message
         else {
             let messages = await message.channel.messages.fetch({ limit: parseInt(args[0].lowercase), before: message.id })
             let filteredmessages = messages.map(a => a)
-            playerInputChoice(message.channel.id, message.member.id, ["YES", "NO"], "YES/NO", "Tidy Channel", Colors.Red, `Are you sure you want to delete ${filteredmessages.length} messages?`)
+            playerInputChoice(message.channel.id, message.member!.id, ["YES", "NO"], "YES/NO", "Tidy Channel", Colors.Red, `Are you sure you want to delete ${filteredmessages.length} messages?`)
                 .then(choice => {
                     handleChoice(choice, filteredmessages);
                 })

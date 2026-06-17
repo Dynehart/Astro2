@@ -38,13 +38,13 @@ function initUser(BaseCommandGroup: commandGroup) {
 }
 
 function usergiveExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
         .then(async member => {
             if (member !== null) {
                 for (let index = 1; index < args.length; index++) {
-                    let role = await getrole(message.channel.id, args[index].lowercase, message.member.id, false)
+                    let role = await getrole(message.channel.id, args[index].lowercase, message.member!.id, false)
                     if (role !== null) {
-                        if (canManageRole(role, message.member)) {
+                        if (canManageRole(role, message.member!)) {
                             if (role.position < getSelfMember().roles.highest.position) {
                                 if (member.roles.cache.some(thisrole => thisrole.id === role.id)) {
                                     sendMessage(message.channel.id, `${member.displayName} already had ${role.name}`)
@@ -67,13 +67,13 @@ function usergiveExec(args: { lowercase: string, original: string }[], message: 
         })
 }
 function usertakeExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
         .then(async member => {
             if (member !== null) {
                 for (let index = 1; index < args.length; index++) {
-                    let role = await getrole(message.channel.id, args[index].lowercase, message.member.id, false)
+                    let role = await getrole(message.channel.id, args[index].lowercase, message.member!.id, false)
                     if (role !== null) {
-                        if (canManageRole(role, message.member)) {
+                        if (canManageRole(role, message.member!)) {
                             if (role.position < getSelfMember().roles.highest.position) {
                                 if (member.roles.cache.some(thisrole => thisrole.id === role.id)) {
                                     member.roles.remove(role)
@@ -97,7 +97,7 @@ function usertakeExec(args: { lowercase: string, original: string }[], message: 
 }
 function userinfoExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     if (args.length === 0) {
-        senduserinfo(message.member)
+        senduserinfo(message.member!)
     }
     else if (args.length === 1) {
         getmember(message.channel.id, args[0].lowercase, message.author.id, false)
@@ -109,7 +109,7 @@ function userinfoExec(args: { lowercase: string, original: string }[], message: 
             .catch(err => { })
     }
     function senduserinfo(member: GuildMember) {
-        let content = `Discord ID: ${member.id}\nUsername: ${member.user.tag}\nNickname: ${member.displayName}\nJoined the server on <t:${Math.floor(member.joinedTimestamp / 1000)}:f>\nThat was <t:${Math.floor(member.joinedTimestamp / 1000)}:R>\n\nCurrent Roles (${member.roles.cache.size - 1}):`
+        let content = `Discord ID: ${member.id}\nUsername: ${member.user.tag}\nNickname: ${member.displayName}\nJoined the server on <t:${Math.floor((member.joinedTimestamp ?? d) / 1000)}:f>\nThat was <t:${Math.floor((member.joinedTimestamp ?? d) / 1000)}:R>\n\nCurrent Roles (${member.roles.cache.size - 1}):`
         member.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).forEach(role => {
             if (role.name !== "@everyone") {
                 content += `\n<@&${role.id}>`
@@ -165,7 +165,7 @@ function usersearchExec(args: { lowercase: string, original: string }[], message
         })
 }
 async function banExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         member.ban().then(() => {
             sendMessage(message.channel.id, `${member.displayName} (${member.user.tag}) has been successfully banned 🔨`)
@@ -175,7 +175,7 @@ async function banExec(args: { lowercase: string, original: string }[], message:
     }
 }
 async function kickExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         member.kick().then(() => {
             sendMessage(message.channel.id, `${member.displayName} (${member.user.tag}) has been successfully kicked 👢`)
@@ -184,7 +184,7 @@ async function kickExec(args: { lowercase: string, original: string }[], message
         })
     }
 }
-function hackbanExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
+function hackbanExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
     message.guild.bans.create(args[0].lowercase).then(bannedUser => {
         //@ts-ignore
         if (bannedUser.user !== undefined && bannedUser.user !== null) {
@@ -204,13 +204,13 @@ function hackbanExec(args: { lowercase: string, original: string }[], message: M
     })
 }
 async function avatarExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         sendMessage(message.channel.id, member.displayAvatarURL({ size: 4096 }))
     }
 }
 async function recruitExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     let corpIndex = Corpnames.findIndex(thiscorp => thiscorp.name.toLowerCase() === args[1].lowercase || thiscorp.shortname.toLowerCase() === args[1].lowercase)
     if (member !== null) {
         const name = member.displayName.replace(/\[(.*?)\]/, "").trim()
@@ -232,7 +232,7 @@ async function bulkretireExec(args: { lowercase: string, original: string }[], m
     })
 }
 async function setcorpExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         const split = /\[(.*?)\]/
         const newcorp = args.slice(1).map(a => a.original).join(" ")
@@ -246,7 +246,7 @@ async function setcorpExec(args: { lowercase: string, original: string }[], mess
     }
 }
 async function setnickExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
-    const member = await getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+    const member = await getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
     if (member !== null) {
         const split = /\[(.*?)\]/
         const newname = args.slice(1).map(a => a.original).join(" ")
@@ -318,7 +318,7 @@ function hasDevPerms(member: GuildMember) {
 }
 
 async function retireMember(message: Message<boolean>, name: string) {
-    const member = await getmember(message.channel.id, name, message.member.id, false)
+    const member = await getmember(message.channel.id, name, message.member!.id, false)
     if (member !== null) {
         if (member.roles.cache.some(thisrole => thisrole.id === memberrole) && member.roles.highest.position < getSelfMember().roles.highest.position) {
             await member.roles.add(retiredrole)

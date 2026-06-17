@@ -11,7 +11,7 @@ abstract class commandArgument {
         this.name = name
         this.argType = argType
     }
-    validateArgument: (rawInput: string) => boolean
+    validateArgument!: (rawInput: string) => boolean;
 }
 class numberArgument extends commandArgument {
     protected min: number
@@ -144,7 +144,7 @@ class commandGroup {
         }
         return null
     }
-    public call(commandName: string, args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string, initial: boolean) {
+    public call(commandName: string | null, args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string, initial: boolean) {
         let space = " "
         if (initial) space = ""
         let validCommand = false
@@ -224,7 +224,7 @@ class command {
         this.deleteCommandMessage = deleteCommandMessage
     }
     public call(args: { lowercase: string, original: string }[], message: Message<true>, d: number, origin: string) {
-        if (this.permissionLimit(message.member)) {
+        if (this.permissionLimit(message.member!)) {
             if (this.channellimit.some(thischannelID => thischannelID === message.channel.id) || this.channellimit.length === 0) {
                 if (args.length === 0 && this.minargs !== 0) {
                     sendMessage(message.channel.id, `Usage: \`${prefix}${origin}${this.usage}\`\n\n${this.helpText}`)

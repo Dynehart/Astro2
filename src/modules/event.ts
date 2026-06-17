@@ -159,14 +159,14 @@ async function listExec(args: { lowercase: string, original: string }[], message
                 if (runs.length !== 0) {
                     runs.forEach(async run => {
                         const queue = await getQueueByID(run.runID)
-                        let content = `Level: ${queue.queue.level + 3}\nPlayers:`
+                        let content = `Level: ${queue!.queue.level + 3}\nPlayers:`
                         let j = 0
-                        queue.queueUsers.forEach(async user => {
+                        queue!.queueUsers.forEach(async user => {
                             const member = await fetchMember(user.playerID)
                             content += ` ${member.displayName},`
                             j++
-                            if (j === queue.queueUsers.length) {
-                                fields.push({ name: `ID: ${queue.queue.shortID}`, value: content.slice(0, -1) })
+                            if (j === queue!.queueUsers.length) {
+                                fields.push({ name: `ID: ${queue!.queue.shortID}`, value: content.slice(0, -1) })
                                 k++
                                 if (k === runs.length) {
                                     let listembed = new EmbedBuilder()
@@ -342,9 +342,9 @@ async function rseresultExec(args: { lowercase: string, original: string }[], me
 }
 
 function handleLog(interaction: ChatInputCommandInteraction) {
-    const runID = interaction.options.getInteger('runid')
-    const points = interaction.options.getInteger('points')
-    const screenshot = interaction.options.getAttachment('screenshot')
+    const runID: number = interaction.options.getInteger('runid')!
+    const points: number = interaction.options.getInteger('points')!
+    const screenshot: Attachment = interaction.options.getAttachment('screenshot')!
 
     getQueueByID(runID)
         .then(async queue => {
@@ -365,10 +365,10 @@ function handleLog(interaction: ChatInputCommandInteraction) {
 }
 
 async function handleSolo(interaction: ChatInputCommandInteraction) {
-    const level = interaction.options.getInteger('level') - 3
+    const level = interaction.options.getInteger('level')! - 3
     const dark = interaction.options.getString('type') === "dark"
-    const points = interaction.options.getInteger('points')
-    const screenshot = interaction.options.getAttachment('screenshot')
+    const points: number = interaction.options.getInteger('points')!
+    const screenshot: Attachment = interaction.options.getAttachment('screenshot')!
     if (dark && level < 4) {
         interaction.followUp({ content: 'DRS only supports runs at DRS7+. Please correct your input', ephemeral: true })
     }
@@ -382,10 +382,10 @@ async function handleSolo(interaction: ChatInputCommandInteraction) {
 }
 
 async function handleRun(interaction: ChatInputCommandInteraction) {
-    const level = interaction.options.getInteger('level') - 3
+    const level = interaction.options.getInteger('level')! - 3
     const dark = interaction.options.getString('type') === "dark"
-    const points = interaction.options.getInteger('points')
-    const screenshot = interaction.options.getAttachment('screenshot')
+    const points: number = interaction.options.getInteger('points')!
+    const screenshot: Attachment = interaction.options.getAttachment('screenshot')!
     let users: User[] = []
     for (let i = 1; i <= 4; i++) {
         const user = interaction.options.getUser(`player${i}`) ?? null
@@ -412,7 +412,7 @@ async function handleVerify(interaction: ButtonInteraction) {
     let verificationEmbed = new EmbedBuilder()
         .setTitle(`✅ Verified ${oldembed.title}`)
         .setDescription(oldembed.description)
-        .setTimestamp(parseInt(oldembed.timestamp))
+        .setTimestamp(parseInt(oldembed.timestamp ?? Date.now().toString()))
         .setColor(oldembed.color)
     interaction.message.edit({ embeds: [verificationEmbed], components: [verifiedrow] })
     interaction.followUp({ content: 'Successfully verified this RS', ephemeral: true })
@@ -433,6 +433,7 @@ function handleVoid(interaction: ButtonInteraction) {
 function addScoreToRun(runID: number, points: number, screenshot: Attachment, level: { level: number; dark: boolean }) {
     getQueueByID(runID)
         .then(async queue => {
+            if(queue === null) return
             queryDB(`UPDATE runlog SET logged = 1, points = ${points} WHERE runID = ${runID}`)
             let content = `Points: **${points}**\nID: *${queue.queue.shortID}*\nPlayers:`
             let k = 0
@@ -441,7 +442,7 @@ function addScoreToRun(runID: number, points: number, screenshot: Attachment, le
                 content += `\n\t${player.displayName}`
                 k++
                 if (k === queue.queueUsers.length) {
-                    const color = (await fetchRole(rsroles[level.level][getDark(level.dark)])).color
+                    const color = (await fetchRole(rsroles[level.level][getDark(level.dark)]!)).color
                     let verificationEmbed = new EmbedBuilder()
                         .setTitle(`${getD(level.dark)}RS${level.level + 3} (${queue.queueUsers.length}/${maxRSsize[getDark(level.dark)]})`)
                         .setDescription(content)

@@ -5,7 +5,7 @@ import { sendMessage } from "../bot.js";
 async function getPlayerModuleData(playerID: string) {
     return new Promise<any>((resolve, reject) => {
         https.get(`https://bot.hs-compendium.com/compendium/api/tech?token=${HSCAPIkey}&userid=${playerID}`, res => {
-            let data = [];
+            let data: any[] = [];
             res.on('data', chunk => {
                 data.push(chunk);
             });

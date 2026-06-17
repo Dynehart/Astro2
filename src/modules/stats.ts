@@ -19,10 +19,10 @@ function initstats(BaseCommandGroup: commandGroup) {
 
 function statsrsExec(args: { lowercase: string, original: string }[], message: Message, d: number) {
     if (args.length === 0) {
-        sendRSstats(d, message.member, message.channel.id);
+        sendRSstats(d, message.member!, message.channel.id);
     }
     else if (args.length === 1) {
-        getmember(message.channel.id, args[0].lowercase, message.member.id, false)
+        getmember(message.channel.id, args[0].lowercase, message.member!.id, false)
             .then(async member => {
                 if (member !== null) {
                     sendRSstats(d, member, message.channel.id);
