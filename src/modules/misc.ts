@@ -127,7 +127,7 @@ function timeExec(args: { lowercase: string, original: string }[], message: Mess
     const delta = getTimestampFromFormattedTime(args[0].lowercase)
     let type = "R"
     if (args.length === 2) type = args[1].original
-    sendMessage(message.channelId, `<t:${d + delta}:${type}>`)
+    sendMessage(message.channelId, `<t:${Math.floor((d + delta) / 1000)}:${type}>`)
 }
 
 export {
