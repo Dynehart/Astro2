@@ -11,7 +11,7 @@ function initmisc(BaseCommandGroup: commandGroup) {
     const emoji = new command("emoji", ["emote"], [allArguments.emojiArgument], "Displays a Emoji in full Size", emojiExec, [], hasdefaultPerms, false, false)
     const tidy = new command("tidy", [], [allArguments.messagecountArgument, allArguments.optmemberArgument], "Cleans a channel of up to 100 messages, optionally only removing those from a specified Member.", tidyExec, [], hasCoordPerms, true, false)
     const purgeDB = new command("purgeDB", [], [], "None of your business", purgeDBExec, [], hasDevPerms, false, true)
-    const time = new command("time", [], [allArguments.deltatimeArgument], "Outputs a timestamp of the specified time in the future, formatted in the format used by discord", timeExec, [], hasdefaultPerms, true, false)
+    const time = new command("time", [], [allArguments.deltatimeArgument, allArguments.timestamptypeArgument], "Outputs a timestamp of the specified time in the future, formatted in the format used by discord", timeExec, [], hasdefaultPerms, true, false)
 
     BaseCommandGroup.addsubcommand(sfa)
     BaseCommandGroup.addsubcommand(emoji)
