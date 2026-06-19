@@ -17,6 +17,7 @@ function initmisc(BaseCommandGroup: commandGroup) {
     BaseCommandGroup.addsubcommand(emoji)
     BaseCommandGroup.addsubcommand(tidy)
     BaseCommandGroup.addsubcommand(purgeDB)
+    BaseCommandGroup.addsubcommand(time)
 
     return BaseCommandGroup
 }
