@@ -299,9 +299,6 @@ const allArguments = {
     "wssizeArgument": new specificNumberArgument("size", 0, [5, 10, 15]),
     "membersArgument": new textArgument("members", 2),
     "shipcountArgument": new numberArgument("shipcount", 0, 1, Infinity),
-    "destinylevelsArgument": new csvArgument("destinyLevels", 0, 1, 12),
-    "blastlevelsArgument": new csvArgument("blastLevels", 0, 0, 12),
-    "arealevelsArgument": new csvArgument("areaLevels", 0, 0, 12),
     "relicsArgument": new numberArgument("reliccount", 0, 1, Infinity),
     "dispatchlevelArgument": new numberArgument("dispatchLevel", 0, 1, 10),
     "twlevelArgument": new numberArgument("twLevel", 0, 0, 12),
@@ -324,7 +321,9 @@ const allArguments = {
     "nicknameArgument": new textArgument("nickname", 2),
     "emojiArgument": new regexpArgument("emoji", 0, /<a?:.+:(\d+)>/),
     "messagecountArgument": new numberArgument("messagecount", 0, 1, 100),
-    "eventseasonArgument": new numberArgument("season", 1, 0, Infinity)
+    "eventseasonArgument": new numberArgument("season", 1, 0, Infinity),
+    "deltatimeArgument": new regexpArgument("Delta Time", 0, /^(?=.*\d[dhms])(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/),
+    "timestamptypeArgument": new specificStringArgument("Timestamp Type", 1, ["t", "T", "d", "D", "f", "F", "R"])
 }
 
 export {

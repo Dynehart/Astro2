@@ -3,13 +3,15 @@ import { command, allArguments, commandGroup } from "./command.js";
 import { hasCoordPerms, hasdefaultPerms, hasDevPerms } from "./user.js";
 import { fetchMember, getmember, playerInputChoice, sendMessage } from "../bot.js";
 import { queryDB } from "./DB.js";
+import { getTimestampFromFormattedTime } from "./utils.js";
 
 
 function initmisc(BaseCommandGroup: commandGroup) {
     const sfa = new command("sfa", [], [], "Displays information about the Spacefleet Alliance", sfaExec, [], hasdefaultPerms, true, true)
     const emoji = new command("emoji", ["emote"], [allArguments.emojiArgument], "Displays a Emoji in full Size", emojiExec, [], hasdefaultPerms, false, false)
-    const tidy = new command("tidy", [], [allArguments.messagecountArgument, allArguments.optmemberArgument], "Cleans a channel of up to 100 messages, optionally only removing those from a specified Member.", tidyExec, [], hasCoordPerms, true, true)
+    const tidy = new command("tidy", [], [allArguments.messagecountArgument, allArguments.optmemberArgument], "Cleans a channel of up to 100 messages, optionally only removing those from a specified Member.", tidyExec, [], hasCoordPerms, true, false)
     const purgeDB = new command("purgeDB", [], [], "None of your business", purgeDBExec, [], hasDevPerms, false, true)
+    const time = new command("time", [], [allArguments.deltatimeArgument], "Outputs a timestamp of the specified time in the future, formatted in the format used by discord", timeExec, [], hasdefaultPerms, true, false)
 
     BaseCommandGroup.addsubcommand(sfa)
     BaseCommandGroup.addsubcommand(emoji)
@@ -119,6 +121,12 @@ function purgeDBExec(args: { lowercase: string, original: string }[], message: M
             })
         })
         .catch(() => { })
+}
+function timeExec(args: { lowercase: string, original: string }[], message: Message<true>, d: number) {
+    const delta = getTimestampFromFormattedTime(args[0].lowercase)
+    let type = "R"
+    if (args.length === 2) type = args[1].original
+    sendMessage(message.channelId, `<t:${d + delta}:${type}`)
 }
 
 export {

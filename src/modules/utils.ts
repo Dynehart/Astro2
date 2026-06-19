@@ -26,27 +26,11 @@ function getFormattedDeltaTime(date1: number, date2: number) {
 
 function getTimestampFromFormattedTime(formattedTime: string) {
     //the formattedTime string is in the format XXdXXhXXmXXs. The timestamp is in the format of ms.
-    let timestamp = 0
-    const daysIndex = formattedTime.search("d")
-    if (daysIndex !== -1) {
-        timestamp += parseInt(formattedTime.slice(0, daysIndex)) * 86400000
-        formattedTime = formattedTime.slice(daysIndex + 1)
-    }
-    const hoursIndex = formattedTime.search("h")
-    if (hoursIndex !== -1) {
-        timestamp += parseInt(formattedTime.slice(0, hoursIndex)) * 3600000
-        formattedTime = formattedTime.slice(hoursIndex + 1)
-    }
-    const minuteIndex = formattedTime.search("m")
-    if (minuteIndex !== -1) {
-        timestamp += parseInt(formattedTime.slice(0, minuteIndex)) * 60000
-        formattedTime = formattedTime.slice(minuteIndex + 1)
-    }
-    const secondsIndex = formattedTime.search("s")
-    if (secondsIndex !== -1) {
-        timestamp += parseInt(formattedTime.slice(0, secondsIndex)) * 1000
-    }
-    return timestamp
+    const days: number = parseInt(formattedTime.match(/(\d+)d/)?.[1] ?? "0")
+    const hours: number = parseInt(formattedTime.match(/(\d+)h/)?.[1] ?? "0")
+    const minutes: number = parseInt(formattedTime.match(/(\d+)m/)?.[1] ?? "0")
+    const seconds: number = parseInt(formattedTime.match(/(\d+)s/)?.[1] ?? "0")
+    return (86400000 * days + 3600000 * hours + 60000 * minutes + 1000 * seconds)
 }
 
 function removeMarkdownFormatting(input: String) {
