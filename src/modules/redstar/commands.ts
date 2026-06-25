@@ -1,35 +1,34 @@
 import { MessageFlags } from "discord.js";
 import type { ButtonInteraction } from "discord.js";
 import { Commands } from "./consts.js";
-
-import type { ButtonHandler, CommandsType } from "./types.js";
+import type { ButtonHandler, CommandsType, Level } from "./types.js";
 import { JoinComponent } from "./components/JoinComponent.js";
+import { fromRawLevel, isDarkStarLevel, isRedStarLevel } from "./helpers.js";
 
 type GuildId = string;
 type RoleId = string;
 
-// TODO: move the type safe levels here
-type RoleLevel = number;
-
-const guilds: Map<GuildId, Map<RoleId, RoleLevel>> = new Map();
+const guilds: Map<GuildId, Map<RoleId, Level>> = new Map();
 
 // TODO: add a TTL?
-const getRoles = (interaction: ButtonInteraction<"cached" | "raw">): Map<RoleId, RoleLevel> => {
+const getRoles = (interaction: ButtonInteraction<"cached" | "raw">): Map<RoleId, Level> => {
     const roles = guilds.get(interaction.guildId);
 
     if (!roles) {
         if (!interaction.guild) throw new Error("gotta fetch the guild I guess");
 
-        const newRoles = new Map<RoleId, RoleLevel>();
+        const newRoles = new Map<RoleId, Level>();
 
         // TODO: avoid this cast
         interaction.guild.roles.cache.forEach((r) => {
-            const roleSegment: string | undefined = r.name.split("RS")[1];
-            let level: number | undefined;
-            if (roleSegment) {
-                level = Number.parseInt(roleSegment);
-            }
-            if (level) newRoles.set(r.id, level);
+            const [type, roleSegment]: (string | undefined)[] = r.name.split("RS");
+            if (type !== "RS" && type !== "DRS") return;
+            if (!roleSegment) return;
+
+            const level = fromRawLevel(Number.parseInt(roleSegment), type === "DRS");
+
+            if (!isRedStarLevel(level) && !isDarkStarLevel(level)) return;
+            newRoles.set(r.id, level);
         });
 
         guilds.set(interaction.guildId, newRoles);
@@ -42,7 +41,7 @@ const getRoles = (interaction: ButtonInteraction<"cached" | "raw">): Map<RoleId,
 // get user's rs level using the discord role.
 // note: best to avoid a custom rbac solution on top of what discord has
 // this only works if guild exists the first runs of getRoles. If it doesn't, we need to populate it some other way
-const getRsLevel = (interaction: ButtonInteraction<"cached" | "raw">): number => {
+const getRsLevel = (interaction: ButtonInteraction<"cached" | "raw">): Level => {
     const guildRoles = getRoles(interaction);
     let memberRoles = new Set<string>();
 
@@ -52,10 +51,10 @@ const getRsLevel = (interaction: ButtonInteraction<"cached" | "raw">): number =>
         interaction.member.roles.cache.map((role) => memberRoles.add(role.id));
     }
 
-    let level = 0;
+    let level: Level = 30;
     for (const [roleId, lvl] of guildRoles) {
-        if (memberRoles.has(roleId)) {
-            level = Math.max(level, lvl);
+        if (memberRoles.has(roleId) && lvl > level) {
+            level = lvl;
         }
     }
 
@@ -106,23 +105,23 @@ const subcommands: Record<CommandsType, ButtonHandler> = {
     [Commands.leave]: onLeaveStart,
     [Commands.config]: onConfig,
 
-    "rs-join-3": onJoin,
-    "rs-join-4": onJoin,
-    "rs-join-5": onJoin,
-    "rs-join-6": onJoin,
-    "rs-join-7": onJoin,
-    "rs-join-8": onJoin,
-    "rs-join-9": onJoin,
-    "rs-join-10": onJoin,
-    "rs-join-11": onJoin,
-    "rs-join-12": onJoin,
+    "rs-join-30": onJoin,
+    "rs-join-40": onJoin,
+    "rs-join-50": onJoin,
+    "rs-join-60": onJoin,
+    "rs-join-70": onJoin,
+    "rs-join-80": onJoin,
+    "rs-join-90": onJoin,
+    "rs-join-100": onJoin,
+    "rs-join-110": onJoin,
+    "rs-join-120": onJoin,
 
-    "drs-join-7": onJoin,
-    "drs-join-8": onJoin,
-    "drs-join-9": onJoin,
-    "drs-join-10": onJoin,
-    "drs-join-11": onJoin,
-    "drs-join-12": onJoin,
+    "rs-join-71": onJoin,
+    "rs-join-81": onJoin,
+    "rs-join-91": onJoin,
+    "rs-join-101": onJoin,
+    "rs-join-111": onJoin,
+    "rs-join-121": onJoin,
 };
 
 // not a fan of having this cast but it's more type safe this way

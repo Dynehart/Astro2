@@ -8,16 +8,14 @@ import {
 } from "discord.js";
 import type { MessageActionRowComponentBuilder } from "discord.js";
 import { Commands } from "../consts.js";
-import { DarkStarLevels, isDarkStarQueue, isRedStarQueue, RedStarLevels } from "../types.js";
-import type { DarkStar, RedStar, User, CurrentQueue, DarkStarLevel, RedStarLevel } from "../types.js";
-import { getCurrentQueues, getCustomId } from "../helpers.js";
+import { DarkStarLevels, RedStarLevels } from "../consts.js";
+import type { User, CurrentQueue, DarkStarLevel, RedStarLevel, Level } from "../types.js";
+import { isDarkStarQueue, isRedStarQueue, getCurrentQueues, getCustomId } from "../helpers.js";
 
 /** builds the component of a given queue. this replaces the main component */
-const buildQueueComponent = (props: (DarkStar | RedStar) & { users: User[] }): ContainerBuilder => {
-    const { level, users } = props;
-
+const buildQueueComponent = ({ level, users }: { level: Level; users: User[] }): ContainerBuilder => {
     const content = users.map((user) => `<t:${user.timestamp}:R> <@${user.userId}>`).join("\n");
-    const customId = getCustomId(props);
+    const customId = getCustomId(level);
 
     const section = new SectionBuilder()
         .addTextDisplayComponents(new TextDisplayBuilder({ content: `RS ${level}` }))
@@ -65,23 +63,6 @@ const getPresortedQueues = <T extends RedStarLevel | DarkStarLevel>(levels: read
     return queues;
 };
 
-const idk = <T extends RedStarLevel | DarkStarLevel, S extends CurrentQueue & { level: T }>(
-    currentQueues: CurrentQueue[],
-    levels: readonly T[],
-    predicate: (value: CurrentQueue) => value is S,
-): Map<T, User[]> => {
-    const rsMap = getPresortedQueues(levels);
-    const queue = currentQueues.filter((queue) => predicate(queue));
-
-    queue.forEach(({ level, playerID, joinedTimestamp }) => {
-        const user: User = { userId: playerID, timestamp: joinedTimestamp };
-        const users = rsMap.get(level) ?? [];
-        users.push(user);
-        rsMap.set(level, users);
-    });
-    return rsMap;
-};
-
 const QueueComponents = <T extends RedStarLevel | DarkStarLevel, S extends CurrentQueue & { level: T }>(
     currentQueues: CurrentQueue[],
     levels: readonly T[],
@@ -99,49 +80,21 @@ const QueueComponents = <T extends RedStarLevel | DarkStarLevel, S extends Curre
             users.push(user);
             map.set(level, users);
         });
-    // const map = idk(currentQueues, levels, predicate);
 
     for (const [level, users] of map) {
-        components.push(buildQueueComponent({ level, dark: true, users }));
+        components.push(buildQueueComponent({ level, users }));
     }
+
+    return components;
 };
 
-/** t */
 export const MainComponent = async (): Promise<ContainerBuilder[]> => {
     const component: ContainerBuilder[] = [];
 
     const currentQueues = await getCurrentQueues();
 
-    // const rsMap = getPresortedQueues(RedStarLevels);
-    // const dsMap = getPresortedQueues(DarkStarLevels);
-
-    // const rsQueue = currentQueues.filter((queue) => isRedStarQueue(queue));
-    // const dsQueue = currentQueues.filter((queue) => isDarkStarQueue(queue));
-
-    // rsQueue.forEach(({ level, playerID, joinedTimestamp }) => {
-    //     const user: User = { userId: playerID, timestamp: joinedTimestamp };
-    //     const users = rsMap.get(level) ?? [];
-    //     users.push(user);
-    //     rsMap.set(level, users);
-    // });
-
-    // dsQueue.forEach(({ level, playerID, joinedTimestamp }) => {
-    //     const user: User = { userId: playerID, timestamp: joinedTimestamp };
-    //     const users = dsMap.get(level) ?? [];
-    //     users.push(user);
-    //     dsMap.set(level, users);
-    // });
-
-    const rsMap = idk(currentQueues, RedStarLevels, isRedStarQueue);
-    const dsMap = idk(currentQueues, DarkStarLevels, isDarkStarQueue);
-
-    for (const [level, users] of dsMap) {
-        component.push(buildQueueComponent({ level, dark: true, users }));
-    }
-
-    for (const [level, users] of rsMap) {
-        component.push(buildQueueComponent({ level, dark: false, users }));
-    }
+    component.push(...QueueComponents(currentQueues, DarkStarLevels, isDarkStarQueue));
+    component.push(...QueueComponents(currentQueues, RedStarLevels, isRedStarQueue));
 
     component.push(InteractionComponent());
 

@@ -1,4 +1,5 @@
-import { MessageFlags, type DMChannel, type NonThreadGuildBasedChannel } from "discord.js";
+import { MessageFlags } from "discord.js";
+import type { DMChannel, NonThreadGuildBasedChannel } from "discord.js";
 import { MainComponent } from "./components/MainComponent.js";
 import { QUEUE_CHANNEL } from "./consts.js";
 
